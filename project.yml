@@ -1,0 +1,43 @@
+name: PetruVim
+options:
+  bundleIdPrefix: com.petru
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "15.0"
+
+packages:
+  LaunchAtLogin:
+    url: https://github.com/sindresorhus/LaunchAtLogin-Modern
+    from: 1.0.0
+
+settings:
+  base:
+    SWIFT_VERSION: 6
+    MACOSX_DEPLOYMENT_TARGET: 14.0
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  PetruVim:
+    type: application
+    platform: macOS
+    sources:
+      - PetruVim
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.petru.PetruVim
+        INFOPLIST_FILE: PetruVim/Info.plist
+        CODE_SIGN_ENTITLEMENTS: PetruVim/PetruVim.entitlements
+    dependencies:
+      - package: LaunchAtLogin
+
+  PetruVimTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - PetruVimTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.petru.PetruVimTests
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: PetruVim

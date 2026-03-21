@@ -177,10 +177,11 @@ enum OperatorResolver {
             return OperatorResult(buffer: buffer)
         }
 
-        // For inclusive motions (lineEnd, findForward, etc.), include the end character
+        // For inclusive motions (findForward, wordEnd, etc.), include the end character.
+        // .lineEnd is excluded: its cursor already lands at lineEndIndex (past last char).
         let deleteEnd: String.Index
         switch motion {
-        case .lineEnd, .findForward, .findBackward, .tillForward, .tillBackward, .wordEnd, .wordEndBig:
+        case .findForward, .findBackward, .tillForward, .tillBackward, .wordEnd, .wordEndBig:
             deleteEnd = end < text.endIndex ? text.index(after: end) : end
         default:
             deleteEnd = end
@@ -219,7 +220,7 @@ enum OperatorResolver {
 
         let yankEnd: String.Index
         switch motion {
-        case .lineEnd, .findForward, .findBackward, .tillForward, .tillBackward, .wordEnd, .wordEndBig:
+        case .findForward, .findBackward, .tillForward, .tillBackward, .wordEnd, .wordEndBig:
             yankEnd = end < text.endIndex ? text.index(after: end) : end
         default:
             yankEnd = end

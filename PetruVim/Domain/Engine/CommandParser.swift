@@ -181,6 +181,13 @@ final class CommandParser {
             return .enterVisual
         }
 
+        // s = delete char + enter insert (cl)
+        if ch == "s" {
+            let cmd = VimCommand.operatorMotion(count: currentCount(), .change, .right)
+            reset()
+            return cmd
+        }
+
         // Standalone operators
         if ch == "x" {
             let cmd = VimCommand.standalone(count: currentCount(), .deleteChar)
@@ -212,6 +219,18 @@ final class CommandParser {
         // Note: Ctrl-R comes through as characters "\u{12}" (ASCII 18)
         if ch == "\u{12}" {
             let cmd = VimCommand.standalone(count: 1, .redo)
+            reset()
+            return cmd
+        }
+
+        // D = d$, C = c$
+        if ch == "D" {
+            let cmd = VimCommand.operatorMotion(count: currentCount(), .delete, .lineEnd)
+            reset()
+            return cmd
+        }
+        if ch == "C" {
+            let cmd = VimCommand.operatorMotion(count: currentCount(), .change, .lineEnd)
             reset()
             return cmd
         }
@@ -252,6 +271,18 @@ final class CommandParser {
     // MARK: - Visual mode
 
     private func feedVisual(_ ch: Character) -> VimCommand? {
+        // In visual mode w/W extend to word end (inclusive), not start of next word
+        if ch == "w" {
+            let cmd = VimCommand.motion(count: currentCount(), .wordEnd)
+            resetAfterCommand()
+            return cmd
+        }
+        if ch == "W" {
+            let cmd = VimCommand.motion(count: currentCount(), .wordEndBig)
+            resetAfterCommand()
+            return cmd
+        }
+
         // Motion keys
         if let motion = motionForChar(ch) {
             let cmd = VimCommand.motion(count: currentCount(), motion)

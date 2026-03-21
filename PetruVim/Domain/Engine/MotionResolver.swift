@@ -103,20 +103,9 @@ enum MotionResolver {
             newIndex = buffer.lineStartIndex
 
         case .lineEnd:
-            let end = buffer.lineEndIndex
-            if end > buffer.lineStartIndex {
-                // Place cursor on last char before newline/end
-                let candidate = text.index(before: end)
-                if candidate >= buffer.lineStartIndex && text[candidate] == "\n" && candidate > buffer.lineStartIndex {
-                    newIndex = text.index(before: candidate)
-                } else if text[candidate] == "\n" {
-                    newIndex = buffer.lineStartIndex
-                } else {
-                    newIndex = candidate
-                }
-            } else {
-                newIndex = buffer.lineStartIndex
-            }
+            // Place cursor at the end-of-line position (before '\n' or at endIndex).
+            // In a bar-cursor text field this puts the caret visually at end of line.
+            newIndex = buffer.lineEndIndex
 
         case .lineFirstNonBlank:
             newIndex = firstNonBlank(lineStart: buffer.lineStartIndex, lineEnd: buffer.lineEndIndex, in: text)

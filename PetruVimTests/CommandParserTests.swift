@@ -186,6 +186,14 @@ final class CommandParserTests: XCTestCase {
         XCTAssertEqual(feed("P"), .standalone(count: 1, .paste(before: true)))
     }
 
+    func test_D_returnsDeleteToLineEnd() {
+        XCTAssertEqual(feed("D"), .operatorMotion(count: 1, .delete, .lineEnd))
+    }
+
+    func test_C_returnsChangeToLineEnd() {
+        XCTAssertEqual(feed("C"), .operatorMotion(count: 1, .change, .lineEnd))
+    }
+
     func test_u_returnsUndo() {
         XCTAssertEqual(feed("u"), .standalone(count: 1, .undo))
     }
@@ -248,6 +256,14 @@ final class CommandParserTests: XCTestCase {
         XCTAssertEqual(feed("h", mode: .visual), .motion(count: 1, .left))
     }
 
+    func test_visual_w_returnsWordEnd() {
+        XCTAssertEqual(feed("w", mode: .visual), .motion(count: 1, .wordEnd))
+    }
+
+    func test_visual_W_returnsWordEndBig() {
+        XCTAssertEqual(feed("W", mode: .visual), .motion(count: 1, .wordEndBig))
+    }
+
     func test_visual_d_returnsOperatorVisual() {
         XCTAssertEqual(feed("d", mode: .visual), .operatorVisual(.delete))
     }
@@ -267,5 +283,16 @@ final class CommandParserTests: XCTestCase {
     func test_visual_f_awaitsChar() {
         XCTAssertNil(feed("f", mode: .visual))
         XCTAssertEqual(feed("x", mode: .visual), .motion(count: 1, .findForward("x")))
+    }
+
+    // MARK: - s command
+
+    func test_s_returnsChangeRight() {
+        XCTAssertEqual(feed("s"), .operatorMotion(count: 1, .change, .right))
+    }
+
+    func test_s_withCount() {
+        feed("3")
+        XCTAssertEqual(feed("s"), .operatorMotion(count: 3, .change, .right))
     }
 }

@@ -89,13 +89,13 @@ final class MotionResolverTests: XCTestCase {
     }
 
     func test_lineEnd() {
-        // "hello" — $ puts cursor on last char 'o' at offset 4
-        XCTAssertEqual(apply(.lineEnd, to: "hello", cursor: 0), 4)
+        // "hello" — $ puts cursor at end-of-line (past last char) = offset 5 (endIndex)
+        XCTAssertEqual(apply(.lineEnd, to: "hello", cursor: 0), 5)
     }
 
     func test_lineEnd_multiLine() {
-        // "ab\ncd" — cursor on first line, $ → offset 1 ('b')
-        XCTAssertEqual(apply(.lineEnd, to: "ab\ncd", cursor: 0), 1)
+        // "ab\ncd" — cursor on first line, $ → offset 2 (the '\n', i.e. after 'b')
+        XCTAssertEqual(apply(.lineEnd, to: "ab\ncd", cursor: 0), 2)
     }
 
     func test_lineFirstNonBlank() {

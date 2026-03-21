@@ -1,11 +1,13 @@
 import Foundation
 
-/// Persists the list of bundle IDs that PetruVim should not intercept keys for.
+/// Persists the list of bundle IDs that PetruVim should intercept keys for.
+/// - Empty list → Vim keys active in all apps (default behaviour).
+/// - Non-empty list → Vim keys active only in the listed apps.
 @MainActor
-final class ExcludedAppsStore {
-    static let shared = ExcludedAppsStore()
+final class IncludedAppsStore {
+    static let shared = IncludedAppsStore()
 
-    private let key = "com.petru.PetruVim.excludedBundleIDs"
+    private let key = "com.petru.PetruVim.includedBundleIDs"
     private var cachedIDs: Set<String>
 
     private init() {
@@ -13,7 +15,7 @@ final class ExcludedAppsStore {
         cachedIDs = Set(stored)
     }
 
-    var excludedBundleIDs: [String] {
+    var includedBundleIDs: [String] {
         Array(cachedIDs).sorted()
     }
 
@@ -27,8 +29,10 @@ final class ExcludedAppsStore {
         persist()
     }
 
-    func isExcluded(_ bundleID: String) -> Bool {
-        cachedIDs.contains(bundleID)
+    /// Returns true when the key event should be blocked (passed through to the app).
+    /// Blocks when: this app is not in the included list (empty list blocks all apps).
+    func isBlocked(_ bundleID: String) -> Bool {
+        return !cachedIDs.contains(bundleID)
     }
 
     private func persist() {

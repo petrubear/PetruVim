@@ -99,6 +99,6 @@ resolve SPM packages (LaunchAtLogin-Modern), build and test in TextEdit.
 
 - Notification name: `com.petru.PetruVim.modeChange`, userInfo key `"mode"` → `"N"` / `"I"` / `"V"`
 - `app as! AXUIElement` in `AXTextElementAdapter` is correct — Swift 6 requires `as!` for CFTypes (`as?` is a compile error)
-- Synthetic undo/redo re-entrancy is handled via `isSendingSyntheticEvent` flag in `CGEventKeyboardAdapter`
+- Synthetic undo/redo events are posted at `.cghidEventTap` level — they bypass the session tap entirely, so no re-entrancy guard is needed
 - `MotionResolver.apply` accepts `visualAnchor: Int?` — pass it in visual mode to compute selection internally
 - `@MainActor` is required on: `VimEngine`, `AppCoordinator`, `PermissionsManager`, `ExcludedAppsStore`, `MenuBarController`

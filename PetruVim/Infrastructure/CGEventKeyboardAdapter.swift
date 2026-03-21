@@ -6,7 +6,6 @@ final class CGEventKeyboardAdapter: KeyboardPort {
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
-    private var isSendingSyntheticEvent = false
 
     func startListening() {
         let trusted = AXIsProcessTrusted()
@@ -70,15 +69,10 @@ final class CGEventKeyboardAdapter: KeyboardPort {
         if event.modifiers.contains(.option) { flags.insert(.maskAlternate) }
         cgEvent.flags = flags
 
-        isSendingSyntheticEvent = true
-        cgEvent.post(tap: .cgSessionEventTap)
-        isSendingSyntheticEvent = false
+        cgEvent.post(tap: .cghidEventTap)
     }
 
     private func handleCGEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
-        // Ignore events we generated ourselves (undo/redo synthetic events) to prevent re-entrancy loops.
-        if isSendingSyntheticEvent { return Unmanaged.passUnretained(event) }
-
         // macOS disables the tap if the callback is too slow. Re-enable it immediately.
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             NSLog("[PetruVim] CGEvent tap was disabled (%@) — re-enabling", type == .tapDisabledByTimeout ? "timeout" : "userInput")

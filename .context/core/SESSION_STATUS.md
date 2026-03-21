@@ -34,9 +34,8 @@ _None_
 
 ## Next Session Priorities
 
-1. **DEBT-005** — `postSyntheticEvent` race condition: cambiar a `.cghidEventTap`, eliminar flag (P0)
-2. **DEBT-006** — `applyToLine` cursor off-by-one en última línea (P1)
-3. **DEBT-007** — `paste` ignora `count` (P1)
+1. **DEBT-007** — `paste` ignora `count` (P1)
+2. **DEBT-008** — `yankWithMotion` inconsistente con `deleteWithMotion` en till motions (P1)
 4. **DEBT-008** — `yankWithMotion` inconsistente con `deleteWithMotion` en till motions (P1)
 5. **DEBT-009** — Retain cycle `[self]` en `awaitingChar` closure (P2)
 6. **DEBT-010** — Keys desconocidas suprimidas silenciosamente (P2)

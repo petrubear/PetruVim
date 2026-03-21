@@ -82,6 +82,9 @@ enum OperatorResolver {
         }
         // When deleting the last line and there's a preceding line, also remove
         // the newline that precedes this line so we don't leave a trailing \n.
+        // Compute cursorBase before decrementing so newCursor lands on the
+        // first character of the now-last line, not on the preceding \n.
+        let cursorBase = rangeStart
         if endLine == lines.count - 1 && startLine > 0 && rangeStart > 0 {
             rangeStart -= 1
         }
@@ -94,7 +97,7 @@ enum OperatorResolver {
         case .delete:
             var newText = text
             newText.removeSubrange(startIdx..<endIdx)
-            let newCursor = min(rangeStart, max(newText.count - 1, 0))
+            let newCursor = min(cursorBase, max(newText.count - 1, 0))
             let result = TextBuffer(newText, cursor: newCursor)
             return OperatorResult(buffer: result, yankedText: yanked)
 

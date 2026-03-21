@@ -17,27 +17,11 @@
 
 ## P0 - Critical
 
-### [DEBT-005] `postSyntheticEvent` race condition — undo/redo can re-enter the tap
-
-- **Source:** Kiro BUG-2
-- **Location:** `PetruVim/Infrastructure/CGEventKeyboardAdapter.swift`
-- **Added:** 2026-03-20
-- **Impact:** `cgEvent.post(tap: .cgSessionEventTap)` is asynchronous — the event is queued on the run loop. `isSendingSyntheticEvent` is reset to `false` immediately after `post()`, before the run loop processes the event. On the next cycle the flag is already `false` and the synthetic undo/redo gets re-intercepted, causing double-processing or infinite loops. The existing flag gives a false sense of safety.
-- **Proposed Fix:** Change `cgEvent.post(tap: .cgSessionEventTap)` to `cgEvent.post(tap: .cghidEventTap)`. Events posted at HID level bypass the session tap entirely, making the flag unnecessary. Remove `isSendingSyntheticEvent` and the guard in `handleCGEvent`.
-- **Estimated Effort:** 30 min
+_None._
 
 ---
 
 ## P1 - High Priority
-
-### [DEBT-006] `applyToLine` — cursor lands on `\n` instead of first char when deleting last line
-
-- **Source:** Kiro BUG-3
-- **Location:** `PetruVim/Domain/Engine/OperatorResolver.swift` — `applyToLine`
-- **Added:** 2026-03-20
-- **Impact:** When deleting the last line and `startLine > 0`, `rangeStart` is decremented by 1 to include the preceding `\n`. `newCursor` is then computed from the already-decremented `rangeStart`, placing the cursor on the `\n` of the previous line instead of its first character. Text is correct; cursor position is wrong.
-- **Proposed Fix:** Compute `newCursor` before decrementing `rangeStart`, or add `+1` after.
-- **Estimated Effort:** 30 min
 
 ### [DEBT-007] `executeStandalone(.paste)` ignores `count`
 
@@ -140,5 +124,7 @@
 | — | `NotificationCenter` vs `DistributedNotificationCenter` | 2026-03-15 | Updated AppCoordinator to use correct center |
 | DEBT-004 | No unit tests | 2026-03-16 | 116 unit tests written covering MotionResolver, OperatorResolver, CommandParser, VimEngine with mock adapters |
 | DEBT-001 | CGEventTap re-entrancy on synthetic events | 2026-03-20 | Added `isSendingSyntheticEvent` flag in CGEventKeyboardAdapter; superseded by DEBT-005 |
+| DEBT-005 | `postSyntheticEvent` race condition | 2026-03-20 | Changed `.cgSessionEventTap` → `.cghidEventTap`; removed `isSendingSyntheticEvent` flag and guard entirely |
+| DEBT-006 | `applyToLine` cursor off-by-one on last line | 2026-03-20 | Introduced `cursorBase` computed before `rangeStart -= 1`; `newCursor` now uses `cursorBase` |
 | DEBT-002 | Force cast `app as! AXUIElement` | 2026-03-20 | Restructured guards to check `!= nil` before `as!`; `as!` retained for CFTypes (Swift 6 requires it) |
 | DEBT-003 | Visual mode strips selection in MotionResolver | 2026-03-20 | Added `visualAnchor: Int?` param to MotionResolver.apply; selection computed internally; VimEngine simplified |

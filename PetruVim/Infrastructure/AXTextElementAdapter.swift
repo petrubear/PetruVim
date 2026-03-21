@@ -5,7 +5,22 @@ import Cocoa
 import ApplicationServices
 
 final class AXTextElementAdapter: TextElementPort {
+
     func readFocusedElement() throws -> TextBuffer {
+        let axElement = try getFocusedAXElement()
+        return try readBuffer(from: axElement)
+    }
+
+    func updateFocusedElement(_ transform: (TextBuffer) throws -> TextBuffer?) throws {
+        let axElement = try getFocusedAXElement()
+        let buffer = try readBuffer(from: axElement)
+        guard let newBuffer = try transform(buffer) else { return }
+        try writeBuffer(newBuffer, to: axElement)
+    }
+
+    // MARK: - Private helpers
+
+    private func getFocusedAXElement() throws -> AXUIElement {
         let systemElement = AXUIElementCreateSystemWide()
 
         var focusedApp: CFTypeRef?
@@ -20,8 +35,10 @@ final class AXTextElementAdapter: TextElementPort {
               focusedElement != nil else {
             throw VimError.noFocusedElement
         }
-        let axElement = focusedElement as! AXUIElement
+        return focusedElement as! AXUIElement
+    }
 
+    private func readBuffer(from axElement: AXUIElement) throws -> TextBuffer {
         // Check role
         var roleValue: CFTypeRef?
         AXUIElementCopyAttributeValue(axElement, kAXRoleAttribute as CFString, &roleValue)
@@ -52,33 +69,14 @@ final class AXTextElementAdapter: TextElementPort {
         let cursorOffset = cfRange.location
         let clampedOffset = min(max(cursorOffset, 0), text.count)
         let cursorIndex = text.index(text.startIndex, offsetBy: clampedOffset)
-
         return TextBuffer(text: text, cursorIndex: cursorIndex)
     }
 
-    func writeFocusedElement(_ buffer: TextBuffer) throws {
-        let systemElement = AXUIElementCreateSystemWide()
-
-        var focusedApp: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(systemElement, kAXFocusedApplicationAttribute as CFString, &focusedApp) == .success,
-              focusedApp != nil else {
-            throw VimError.noFocusedElement
-        }
-        let app = focusedApp as! AXUIElement
-
-        var focusedElement: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(app, kAXFocusedUIElementAttribute as CFString, &focusedElement) == .success,
-              focusedElement != nil else {
-            throw VimError.noFocusedElement
-        }
-        let axElement = focusedElement as! AXUIElement
-
-        // Write value
+    private func writeBuffer(_ buffer: TextBuffer, to axElement: AXUIElement) throws {
         guard AXUIElementSetAttributeValue(axElement, kAXValueAttribute as CFString, buffer.text as CFString) == .success else {
             throw VimError.accessibilityWriteFailed
         }
 
-        // Write cursor position or visual selection range
         let location: Int
         let length: Int
         if let sel = buffer.selectionRange {

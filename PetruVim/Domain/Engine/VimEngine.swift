@@ -87,58 +87,51 @@ final class VimEngine {
 
         case .enterVisual:
             mode = .visual
-            if let buffer = try? textElement.readFocusedElement() {
-                let offset = buffer.cursorOffset
-                visualAnchor = offset
-                // Show initial 1-char selection at the cursor
-                let selEnd = min(offset + 1, buffer.text.count)
-                let initial = TextBuffer(buffer.text, cursor: offset, selection: offset..<selEnd)
-                try? textElement.writeFocusedElement(initial)
+            var anchor: Int?
+            try? textElement.updateFocusedElement { buffer in
+                anchor = buffer.cursorOffset
+                let selEnd = min(buffer.cursorOffset + 1, buffer.text.count)
+                return TextBuffer(buffer.text, cursor: buffer.cursorOffset, selection: buffer.cursorOffset..<selEnd)
             }
+            visualAnchor = anchor
             notifications.postModeChange(.visual)
 
         case .motion(let count, let motion):
-            guard let buffer = try? textElement.readFocusedElement() else { return }
             let anchor = mode == .visual ? visualAnchor : nil
-            let result = MotionResolver.apply(motion, count: count, to: buffer, visualAnchor: anchor)
-            try? textElement.writeFocusedElement(result)
+            try? textElement.updateFocusedElement { buffer in
+                MotionResolver.apply(motion, count: count, to: buffer, visualAnchor: anchor)
+            }
 
         case .operatorMotion(let count, let op, let motion):
-            guard let buffer = try? textElement.readFocusedElement() else { return }
-            let result = OperatorResolver.apply(op, motion: motion, count: count, buffer: buffer, register: register, lastChange: lastChange)
-            try? textElement.writeFocusedElement(result.buffer)
-            if let yanked = result.yankedText {
-                register = yanked
-                clipboard.write(yanked)
+            var yanked: String?
+            try? textElement.updateFocusedElement { [self] buffer in
+                let result = OperatorResolver.apply(op, motion: motion, count: count, buffer: buffer, register: register, lastChange: lastChange)
+                yanked = result.yankedText
+                return result.buffer
             }
-            if op == .change {
-                mode = .insert
-                notifications.postModeChange(.insert)
-            }
+            if let y = yanked { register = y; clipboard.write(y) }
+            if op == .change { mode = .insert; notifications.postModeChange(.insert) }
             saveLastChange(command)
 
         case .operatorLine(let count, let op):
-            guard let buffer = try? textElement.readFocusedElement() else { return }
-            let result = OperatorResolver.applyToLine(op, count: count, buffer: buffer)
-            try? textElement.writeFocusedElement(result.buffer)
-            if let yanked = result.yankedText {
-                register = yanked
-                clipboard.write(yanked)
+            var yanked: String?
+            try? textElement.updateFocusedElement { [self] buffer in
+                let result = OperatorResolver.applyToLine(op, count: count, buffer: buffer)
+                yanked = result.yankedText
+                return result.buffer
             }
-            if op == .change {
-                mode = .insert
-                notifications.postModeChange(.insert)
-            }
+            if let y = yanked { register = y; clipboard.write(y) }
+            if op == .change { mode = .insert; notifications.postModeChange(.insert) }
             saveLastChange(command)
 
         case .operatorVisual(let op):
-            guard let buffer = try? textElement.readFocusedElement() else { return }
-            let result = OperatorResolver.applyToVisualSelection(op, buffer: buffer)
-            try? textElement.writeFocusedElement(result.buffer)
-            if let yanked = result.yankedText {
-                register = yanked
-                clipboard.write(yanked)
+            var yanked: String?
+            try? textElement.updateFocusedElement { buffer in
+                let result = OperatorResolver.applyToVisualSelection(op, buffer: buffer)
+                yanked = result.yankedText
+                return result.buffer
             }
+            if let y = yanked { register = y; clipboard.write(y) }
             mode = .normal
             visualAnchor = nil
             if op == .change {
@@ -162,25 +155,22 @@ final class VimEngine {
     private func executeStandalone(_ op: VimOperator, count: Int) {
         switch op {
         case .deleteChar:
-            guard let buffer = try? textElement.readFocusedElement() else { return }
-            let result = OperatorResolver.apply(.deleteChar, motion: .right, count: count, buffer: buffer, register: register, lastChange: lastChange)
-            try? textElement.writeFocusedElement(result.buffer)
-            if let yanked = result.yankedText {
-                register = yanked
-                clipboard.write(yanked)
+            var yanked: String?
+            try? textElement.updateFocusedElement { [self] buffer in
+                let result = OperatorResolver.apply(.deleteChar, motion: .right, count: count, buffer: buffer, register: register, lastChange: lastChange)
+                yanked = result.yankedText
+                return result.buffer
             }
+            if let y = yanked { register = y; clipboard.write(y) }
             saveLastChange(.standalone(count: count, .deleteChar))
 
         case .paste(let before):
-            // Read from clipboard if register is empty
-            if register == nil {
-                register = clipboard.read()
+            if register == nil { register = clipboard.read() }
+            try? textElement.updateFocusedElement { [self] buffer in
+                OperatorResolver.apply(
+                    .paste(before: before), motion: .right, count: count,
+                    buffer: buffer, register: register, lastChange: lastChange).buffer
             }
-            guard let buffer = try? textElement.readFocusedElement() else { return }
-            let result = OperatorResolver.apply(
-                .paste(before: before), motion: .right, count: count,
-                buffer: buffer, register: register, lastChange: lastChange)
-            try? textElement.writeFocusedElement(result.buffer)
             saveLastChange(.standalone(count: count, .paste(before: before)))
 
         case .undo:
@@ -204,48 +194,44 @@ final class VimEngine {
     // MARK: - Insert entry points
 
     private func applyInsertEntryPoint(_ ep: InsertEntryPoint) {
-        guard let buffer = try? textElement.readFocusedElement() else { return }
-
         switch ep {
         case .i:
-            // Cursor stays in place
-            break
+            break // Cursor stays in place — no AX call needed
 
         case .a:
-            // Move cursor right by 1, allowing past the last char (insert mode semantics)
-            let newOffset = min(buffer.cursorOffset + 1, buffer.text.count)
-            try? textElement.writeFocusedElement(TextBuffer(buffer.text, cursor: newOffset))
+            try? textElement.updateFocusedElement { buffer in
+                let newOffset = min(buffer.cursorOffset + 1, buffer.text.count)
+                return TextBuffer(buffer.text, cursor: newOffset)
+            }
 
         case .I:
-            // Move to first non-blank of line
-            let result = MotionResolver.apply(.lineFirstNonBlank, count: 1, to: buffer)
-            try? textElement.writeFocusedElement(result)
+            try? textElement.updateFocusedElement { buffer in
+                MotionResolver.apply(.lineFirstNonBlank, count: 1, to: buffer)
+            }
 
         case .A:
-            // Move to end of line
-            let text = buffer.text
-            let lineEnd = buffer.lineEndIndex
-            let offset = text.distance(from: text.startIndex, to: lineEnd)
-            let result = TextBuffer(text, cursor: offset)
-            try? textElement.writeFocusedElement(result)
+            try? textElement.updateFocusedElement { buffer in
+                let offset = buffer.text.distance(from: buffer.text.startIndex, to: buffer.lineEndIndex)
+                return TextBuffer(buffer.text, cursor: offset)
+            }
 
         case .o:
-            // Insert newline below current line, cursor on new line
-            var text = buffer.text
-            let lineEnd = buffer.lineEndIndex
-            text.insert("\n", at: lineEnd)
-            let offset = text.distance(from: text.startIndex, to: lineEnd) + 1
-            let result = TextBuffer(text, cursor: offset)
-            try? textElement.writeFocusedElement(result)
+            try? textElement.updateFocusedElement { buffer in
+                var text = buffer.text
+                let lineEnd = buffer.lineEndIndex
+                text.insert("\n", at: lineEnd)
+                let offset = text.distance(from: text.startIndex, to: lineEnd) + 1
+                return TextBuffer(text, cursor: offset)
+            }
 
         case .O:
-            // Insert newline above current line, cursor on new line
-            var text = buffer.text
-            let lineStart = buffer.lineStartIndex
-            text.insert("\n", at: lineStart)
-            let offset = text.distance(from: text.startIndex, to: lineStart)
-            let result = TextBuffer(text, cursor: offset)
-            try? textElement.writeFocusedElement(result)
+            try? textElement.updateFocusedElement { buffer in
+                var text = buffer.text
+                let lineStart = buffer.lineStartIndex
+                text.insert("\n", at: lineStart)
+                let offset = text.distance(from: text.startIndex, to: lineStart)
+                return TextBuffer(text, cursor: offset)
+            }
         }
     }
 

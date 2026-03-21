@@ -66,7 +66,7 @@ PetruVim/
 - `LSUIElement = YES` — menu bar only, no Dock icon
 - Use `VimOperator` (not `Operator` — Swift keyword conflict)
 - Error handling: throw `VimError`, don't return optionals from engine methods
-- Always check `ExcludedAppsStore.shared` before processing a key event
+- Key exclusion is enforced via `CGEventKeyboardAdapter.preFilter` (installed in `AppCoordinator`), not inside `VimEngine` — `ExcludedAppsStore.shared` must be accessed inside `MainActor.assumeIsolated { }`
 
 ## Context Files
 

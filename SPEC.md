@@ -21,7 +21,7 @@ macOS Accessibility API (AXUIElement).
 | # | Status | Scope |
 |---|--------|-------|
 | 1 | ✅ | Project scaffold: `project.yml`, `Info.plist`, entitlements, `PetruVimApp.swift` |
-| 2 | ✅ | Domain models: `VimMode`, `TextBuffer`, `Motion`, `Operator`, `VimCommand`, `VimError` |
+| 2 | ✅ | Domain models: `VimMode`, `TextBuffer`, `Motion`, `VimOperator`, `VimCommand`, `VimError` |
 | 3 | ✅ | Domain ports: `TextElementPort`, `KeyboardPort`, `ClipboardPort`, `NotificationPort` |
 | 4 | ✅ | `MotionResolver` (all 20 motions: h/l/j/k, w/b/e/W/B/E, 0/$/_/^, gg/G, f/F/t/T) |
 | 5 | ✅ | `OperatorResolver` (delete/change/yank/deleteChar/paste, line + visual variants) |
@@ -58,7 +58,7 @@ macOS Accessibility API (AXUIElement).
 
 ```
 Domain (pure Swift, no frameworks)
-  Models:    VimMode, TextBuffer, Motion, Operator, VimCommand
+  Models:    VimMode, TextBuffer, Motion, VimOperator, VimCommand
   Ports:     TextElementPort, KeyboardPort, ClipboardPort, NotificationPort
   Engine:    CommandParser, MotionResolver, OperatorResolver, VimEngine
 
@@ -125,10 +125,7 @@ PetruVim/
     ├── MotionResolverTests.swift
     ├── OperatorResolverTests.swift
     ├── VimEngineTests.swift
-    └── Mocks/
-        ├── MockTextElement.swift
-        ├── MockClipboard.swift
-        └── MockKeyboard.swift
+    └── Mocks.swift              (MockTextElement, MockKeyboard, MockClipboard, MockNotifications)
 ```
 
 ---
@@ -155,13 +152,14 @@ struct TextBuffer: Equatable {
 ```swift
 enum VimCommand: Equatable {
     case motion(count: Int, Motion)
-    case operatorMotion(count: Int, Operator, Motion)
-    case operatorLine(count: Int, Operator)       // dd / yy / cc
-    case operatorVisual(Operator)                  // d/c/y on visual selection
-    case enterInsert(InsertEntryPoint)             // i/a/I/A/o/O
+    case operatorMotion(count: Int, VimOperator, Motion)
+    case operatorLine(count: Int, VimOperator)       // dd / yy / cc
+    case operatorVisual(VimOperator)                  // d/c/y on visual selection
+    case enterInsert(InsertEntryPoint)               // i/a/I/A/o/O
     case enterVisual
     case exitToNormal
-    case standalone(count: Int, Operator)          // x, p, P, u, Ctrl-R, .
+    case standalone(count: Int, VimOperator)          // x, p, P, u, Ctrl-R, .
+    case passThrough                                  // unrecognized key — let host handle it
 }
 ```
 
@@ -249,7 +247,7 @@ XCTAssertEqual(result.cursorOffset, 6)
 
 // OperatorResolverTests
 let result = OperatorResolver.apply(.delete, motion: .wordForward, count: 1,
-                                    buffer: buf, register: nil, lastChange: nil)
+                                    buffer: buf, register: nil)
 XCTAssertEqual(result.buffer.text, "world")
 XCTAssertEqual(result.yankedText, "hello ")
 

@@ -53,7 +53,7 @@ VimEngine
 ## CGEvent Tap
 
 `CGEventKeyboardAdapter` installs a `.cgSessionEventTap` that intercepts all key-down events.
-Events are forwarded to `VimEngine.handleKeyEvent(_:)` via the `KeyboardPort.onKeyEvent` callback.
+On each event, `preFilter` is checked first (installed by `AppCoordinator`); if it returns `true` the event passes through unchanged. Otherwise the event is forwarded to `VimEngine.handleKeyEvent(_:)` via the `KeyboardPort.onKeyEvent` callback.
 Synthetic undo/redo are posted via `keyboard.postSyntheticEvent` using keyCode 6 (Z) with Cmd/Cmd-Shift.
 
 ## App Exclusion Flow
@@ -67,7 +67,8 @@ Synthetic undo/redo are posted via `keyboard.postSyntheticEvent` using keyCode 6
 
 `PermissionsManager` checks `AXIsProcessTrusted()` and prompts via `PermissionsView` (SwiftUI sheet)
 if accessibility access is not granted. `AppCoordinator` polls until access is granted before
-starting the event tap.
+starting the event tap. `observePermissionChanges` runs indefinitely — it detects both grant and
+subsequent revocation by tracking the last known state inside the poll loop.
 
 ## Visual Mode
 

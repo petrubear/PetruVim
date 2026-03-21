@@ -69,3 +69,6 @@ _None._
 | DEBT-020 | `SYSTEM_MAP.md` desactualizado (App Exclusion Flow + Visual Mode) | 2026-03-20 | App Exclusion Flow actualizado a preFilter/AppCoordinator; Visual Mode "(Planned)" → implementación real documentada |
 | DEBT-021 | `ACTIVE_CONTEXT.md` con notas de deuda ya resuelta | 2026-03-20 | Sección Technical Notes eliminada (Task 14, 15, DEBT-001 ya cerrados); Open Question de Task 13 eliminada |
 | DEBT-022 | `SPEC.md` referencia API y nombre de tipo obsoletos | 2026-03-20 | `enum Operator` → `VimOperator`; flujo VimEngine y Event Flow actualizados a `updateFocusedElement(transform:)` |
+| Kiro-1 | `observePermissionChanges` no detecta revocación de permisos | 2026-03-20 | `current` movido dentro del loop como `var`; early-return on grant eliminado; polling corre indefinidamente |
+| Kiro-2 | `updateFocusedElement` transform `-> TextBuffer?` — nil path nunca usado | 2026-03-20 | Firma cambiada a `-> TextBuffer`; `guard let` muerto eliminado de AXTextElementAdapter y MockTextElement |
+| Kiro-3 | `.enterVisual` cambia mode antes del AX call — estado inconsistente si falla | 2026-03-20 | `mode = .visual` / `visualAnchor` asignados solo si AX call tiene éxito; `guard let anchor else { return }` |

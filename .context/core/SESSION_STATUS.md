@@ -1,12 +1,13 @@
 # Session State
 
 **Last Updated:** 2026-03-20
-**Session Focus:** Pre-external audit + debt resolution (DEBT-016 to DEBT-022)
+**Session Focus:** Pre-external audit + debt resolution (DEBT-016 to DEBT-022) + Kiro audit fixes
 
 ## Session Summary
 
 Full codebase audit prior to external review. Found and resolved 7 items (1 P1 concurrency issue,
 3 P2 code quality issues, 3 P3 doc drift items). 3 new tests added (lineDown count behavior).
+Subsequent Kiro audit resolved 3 additional bugs in PermissionsManager, TextElementPort, and VimEngine.
 
 Build: 0 errors, 0 warnings. Tests: 159 (156 + 3 new).
 
@@ -20,6 +21,9 @@ Build: 0 errors, 0 warnings. Tests: 159 (156 + 3 new).
 - [x] DEBT-020 — `SYSTEM_MAP.md` App Exclusion Flow updated to reflect preFilter/AppCoordinator; Visual Mode "(Planned)" replaced with real implementation description
 - [x] DEBT-021 — `ACTIVE_CONTEXT.md` stale Technical Notes (Task 14, 15, DEBT-001) and stale Open Question (Task 13) removed
 - [x] DEBT-022 — `SPEC.md` updated: `enum Operator` → `VimOperator`; VimEngine flow and Event Flow updated to `updateFocusedElement(transform:)`
+- [x] Kiro: `PermissionsManager.observePermissionChanges` — `current` moved inside loop; early-return on grant removed; polling now runs indefinitely detecting both grant and revocation
+- [x] Kiro: `TextElementPort.updateFocusedElement` transform signature changed `-> TextBuffer?` → `-> TextBuffer`; dead nil-path removed from AXTextElementAdapter and MockTextElement
+- [x] Kiro: `VimEngine .enterVisual` — `mode = .visual` / `visualAnchor` now only set after AX call succeeds; `guard let anchor else { return }` prevents entering visual mode with nil anchor
 
 ## Previous Session Completed
 
@@ -66,15 +70,14 @@ Integration testing checklist (for user to run manually):
 ## Files Modified This Session
 
 - `PetruVim/Application/AppCoordinator.swift` — DEBT-016: MainActor.assumeIsolated in preFilter
+- `PetruVim/Application/PermissionsManager.swift` — Kiro: current moved inside loop; polling indefinite
 - `PetruVim/Domain/Engine/OperatorResolver.swift` — DEBT-017: lastChange param removed
-- `PetruVim/Domain/Engine/VimEngine.swift` — DEBT-017: call sites updated
+- `PetruVim/Domain/Engine/VimEngine.swift` — DEBT-017 call sites; Kiro: .enterVisual guard
 - `PetruVim/Domain/Engine/MotionResolver.swift` — DEBT-019: lineDown count fix
-- `PetruVim/Domain/Ports/TextElementPort.swift` — DEBT-018: readFocusedElement removed
-- `PetruVim/Infrastructure/AXTextElementAdapter.swift` — DEBT-018: readFocusedElement removed
-- `PetruVimTests/Mocks.swift` — DEBT-018: readFocusedElement removed from MockTextElement
+- `PetruVim/Domain/Ports/TextElementPort.swift` — DEBT-018 + Kiro: non-optional transform
+- `PetruVim/Infrastructure/AXTextElementAdapter.swift` — DEBT-018 + Kiro: guard let removed
+- `PetruVimTests/Mocks.swift` — DEBT-018 + Kiro: MockTextElement updated
 - `PetruVimTests/MotionResolverTests.swift` — DEBT-019: 3 new lineDown tests
 - `PetruVimTests/OperatorResolverTests.swift` — DEBT-017: 11 call sites updated
-- `.context/architecture/SYSTEM_MAP.md` — DEBT-020
-- `.context/core/ACTIVE_CONTEXT.md` — DEBT-021
-- `.context/quality/TECHNICAL_DEBT.md` — audit registry
-- `SPEC.md` — DEBT-022
+- `.context/` files — updated
+- `SPEC.md`, `AGENTS.md` — doc sync

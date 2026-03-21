@@ -1,7 +1,7 @@
 # Technical Debt Registry
 
 **Last Updated:** 2026-03-20
-**Total Items:** 7
+**Total Items:** 1
 **Critical (P0):** 0
 
 ## Priority Definitions
@@ -29,45 +29,11 @@ _None._
 
 ## P2 - Medium Priority
 
-### [DEBT-011] `ExcludedAppRow` calls `NSRunningApplication` on every SwiftUI render
-
-- **Source:** Kiro DESIGN-5
-- **Location:** `PetruVim/Presentation/SettingsView.swift` — `ExcludedAppRow`
-- **Added:** 2026-03-20
-- **Impact:** `app` is a computed var that invokes `NSRunningApplication.runningApplications(withBundleIdentifier:)` on every render cycle. This is an expensive AppKit call inside a SwiftUI view body.
-- **Proposed Fix:** Resolve `NSRunningApplication` once in `onAppear` and store in a `@State` var, or pass the resolved app as a parameter from the parent.
-- **Estimated Effort:** 30 min
+_None._
 
 ---
 
 ## P3 - Low Priority
-
-### [DEBT-012] `applyCount` in `CommandParser` is dead code
-
-- **Source:** OpenCode
-- **Location:** `PetruVim/Domain/Engine/CommandParser.swift` — `applyCount`
-- **Added:** 2026-03-20
-- **Impact:** The method does nothing but `return cmd`. All callers pass count via the command's associated value directly. The method name implies logic that doesn't exist and misleads readers.
-- **Proposed Fix:** Delete the method and inline `cmd` at all call sites (already the effective behavior).
-- **Estimated Effort:** 10 min
-
-### [DEBT-013] `moveVertical` is O(n²) on large documents
-
-- **Source:** Kiro DESIGN-3
-- **Location:** `PetruVim/Domain/Engine/MotionResolver.swift` — `moveVertical`
-- **Added:** 2026-03-20
-- **Impact:** Two separate iterations over all lines: one to find the current line, one to compute the target line start offset. Imperceptible for typical documents; potentially slow on files with thousands of lines.
-- **Proposed Fix:** Compute current line index and target line start in a single pass.
-- **Estimated Effort:** 1 hour
-
-### [DEBT-014] `onKeyEvent` exclusion wrapper installed after `engine.start()`
-
-- **Source:** Kiro DESIGN-2
-- **Location:** `PetruVim/Application/AppCoordinator.swift` — `startEngine`
-- **Added:** 2026-03-20
-- **Impact:** `engine.start()` assigns `keyboard.onKeyEvent`. AppCoordinator then wraps it with the exclusion-list check. If VimEngine ever reassigns `onKeyEvent` (e.g., on restart), the exclusion wrapper is silently lost and all apps are intercepted regardless of the exclusion list.
-- **Proposed Fix:** Inject the exclusion check before `engine.start()`, or restructure so the exclusion logic is part of the keyboard adapter setup rather than a post-hoc wrapper.
-- **Estimated Effort:** 1 hour
 
 ### [DEBT-015] `AXTextElementAdapter` re-fetches focused element on every write
 
@@ -98,3 +64,7 @@ _None._
 | DEBT-008 | `yankWithMotion` excludes till motions from inclusive range | 2026-03-20 | Added `.tillForward`/`.tillBackward` to inclusive switch in `yankWithMotion`, mirroring `deleteWithMotion` |
 | DEBT-009 | Retain cycle in `awaitingChar` closure | 2026-03-20 | Changed `[self]` to `[weak self]`; count falls back to 1 if self is nil |
 | DEBT-010 | Unknown keys silently suppressed | 2026-03-20 | Added `VimCommand.passThrough`; CommandParser returns it for unknown keys; VimEngine returns false to pass key to host |
+| DEBT-011 | NSRunningApplication on every SwiftUI render | 2026-03-20 | ExcludedAppRow.app moved to @State, resolved once in .onAppear |
+| DEBT-012 | `applyCount` dead code | 2026-03-20 | Method deleted; all call sites inlined to return cmd directly |
+| DEBT-013 | `moveVertical` two-pass over allLines | 2026-03-20 | Single pass collects lineStarts[] and locates currentLine simultaneously |
+| DEBT-014 | Exclusion wrapper post-hoc on onKeyEvent | 2026-03-20 | Added preFilter to CGEventKeyboardAdapter; AppCoordinator installs it before engine.start() |

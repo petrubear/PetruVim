@@ -17,6 +17,11 @@ Build: 0 errors, 0 warnings. Tests: 156 (152 + 4 new).
 - [x] DEBT-009 — Retain cycle en `awaitingChar`: `[self]` → `[weak self]`; count hace fallback a 1 si self es nil
 - [x] DEBT-010 — Keys desconocidas suprimidas: añadido `VimCommand.passThrough`; `CommandParser` retorna `.passThrough` para keys no reconocidas; `VimEngine` retorna `false` para dejarlas pasar al host
 - [x] Tests — 9 tests nuevos (5 OperatorResolver + 4 CommandParser)
+- [x] SwiftLint — `.swiftlint.yml` añadido; 91 violaciones → 0; correcciones en CGEventKeyboardAdapter, AXTextElementAdapter, KeyboardPort, OperatorResolver, VimEngine
+- [x] DEBT-011 — `ExcludedAppRow.app` movido a `@State` + `.onAppear`
+- [x] DEBT-012 — `applyCount` eliminado; call sites inlineados
+- [x] DEBT-013 — `moveVertical` combinado en un solo pass con `lineStarts[]`
+- [x] DEBT-014 — `preFilter` añadido a `CGEventKeyboardAdapter`; `AppCoordinator` lo instala antes de `engine.start()`
 
 ## Previous Session Completed
 
@@ -39,15 +44,13 @@ _None_
 
 ## Next Session Priorities
 
-1. **DEBT-011** — NSRunningApplication en cada render de SwiftUI (P2)
-2. **DEBT-012** — `applyCount` es código muerto (P3)
-3. **DEBT-013** — `moveVertical` O(n²) (P3)
-4. Continuar con P3 en orden del registro
+1. **DEBT-015** — AX re-fetch en cada write (P3, esfuerzo estimado: 3h)
+2. Añadir SwiftLint al build phase de Xcode (opcional)
 
 ## Build Status
 
 - **Last Build:** 2026-03-20 — BUILD SUCCEEDED, 0 warnings, Swift 6
-- **Test Results:** 156 tests, 0 failures
+- **Test Results:** 156 tests, 0 failures (SwiftLint: 0 violations)
 - **Coverage:** Not measured
 - **Issues:** None
 

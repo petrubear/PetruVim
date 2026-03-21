@@ -1,20 +1,22 @@
 # Session State
 
 **Last Updated:** 2026-03-20
-**Session Focus:** Technical debt resolution (P1)
+**Session Focus:** Technical debt resolution (P1, P2)
 
 ## Session Summary
 
-Resolved DEBT-007 (paste count) and DEBT-008 (yankWithMotion till motions). 5 new tests added.
+Resolved DEBT-007, DEBT-008, DEBT-009, DEBT-010. 9 new tests added total this session.
 Previous session: resolved all open tasks (14, 15, 13), DEBT-001–003, Swift 6 migration.
 
-Build: 0 errors, 0 warnings (last known). Tests: 147 + 5 new = 152 expected.
+Build: 0 errors, 0 warnings. Tests: 156 (152 + 4 new).
 
 ## Completed This Session
 
 - [x] DEBT-007 — `paste` ignora `count`: `OperatorResolver.paste` ahora acepta `count` y repite el contenido; `VimEngine` pasa `count` en lugar de `1`
 - [x] DEBT-008 — `yankWithMotion` faltaba `.tillForward`/`.tillBackward` en el switch de motions inclusivos; añadidos para coincidir con `deleteWithMotion`
-- [x] Tests — 5 tests nuevos en `OperatorResolverTests`: paste count x1/x3/before-x2, yank till forward/backward
+- [x] DEBT-009 — Retain cycle en `awaitingChar`: `[self]` → `[weak self]`; count hace fallback a 1 si self es nil
+- [x] DEBT-010 — Keys desconocidas suprimidas: añadido `VimCommand.passThrough`; `CommandParser` retorna `.passThrough` para keys no reconocidas; `VimEngine` retorna `false` para dejarlas pasar al host
+- [x] Tests — 9 tests nuevos (5 OperatorResolver + 4 CommandParser)
 
 ## Previous Session Completed
 
@@ -37,15 +39,15 @@ _None_
 
 ## Next Session Priorities
 
-1. **DEBT-009** — Retain cycle `[self]` en `awaitingChar` closure (P2)
-2. **DEBT-010** — Keys desconocidas suprimidas silenciosamente (P2)
-3. **DEBT-011** — NSRunningApplication en cada render de SwiftUI (P2)
+1. **DEBT-011** — NSRunningApplication en cada render de SwiftUI (P2)
+2. **DEBT-012** — `applyCount` es código muerto (P3)
+3. **DEBT-013** — `moveVertical` O(n²) (P3)
 4. Continuar con P3 en orden del registro
 
 ## Build Status
 
 - **Last Build:** 2026-03-20 — BUILD SUCCEEDED, 0 warnings, Swift 6
-- **Test Results:** 147 tests, 0 failures
+- **Test Results:** 156 tests, 0 failures
 - **Coverage:** Not measured
 - **Issues:** None
 
@@ -68,7 +70,10 @@ Note: synthetic undo/redo re-entrancy is resolved — `isSendingSyntheticEvent` 
 
 ## Files Modified This Session
 
-- `PetruVim/Domain/Engine/OperatorResolver.swift` — DEBT-007: paste accepts count, repeats content; DEBT-008: tillForward/tillBackward added to yankWithMotion inclusive set
-- `PetruVim/Domain/Engine/VimEngine.swift` — DEBT-007: pass count instead of 1 to paste
-- `PetruVimTests/OperatorResolverTests.swift` — 5 new tests for paste count and yank till motions
+- `PetruVim/Domain/Engine/OperatorResolver.swift` — DEBT-007: paste count; DEBT-008: tillForward/tillBackward in yank
+- `PetruVim/Domain/Engine/VimEngine.swift` — DEBT-007: count passthrough; DEBT-010: passThrough handling
+- `PetruVim/Domain/Engine/CommandParser.swift` — DEBT-009: [weak self]; DEBT-010: .passThrough returns
+- `PetruVim/Domain/Models/VimCommand.swift` — DEBT-010: case passThrough added
+- `PetruVimTests/OperatorResolverTests.swift` — 5 new tests
+- `PetruVimTests/CommandParserTests.swift` — 4 new tests
 - `.context/` files — updated

@@ -1,7 +1,7 @@
 # Technical Debt Registry
 
 **Last Updated:** 2026-03-20
-**Total Items:** 9
+**Total Items:** 7
 **Critical (P0):** 0
 
 ## Priority Definitions
@@ -28,24 +28,6 @@ _None._
 ---
 
 ## P2 - Medium Priority
-
-### [DEBT-009] Retain cycle in `CommandParser.awaitingChar` closure
-
-- **Source:** Kiro BUG-6
-- **Location:** `PetruVim/Domain/Engine/CommandParser.swift` — `feedNormal`, `feedVisual`
-- **Added:** 2026-03-20
-- **Impact:** `awaitingChar = { [self] foundChar in ... }` captures `CommandParser` strongly. Since `awaitingChar` is a property of `CommandParser`, this creates a retain cycle: `parser` → `awaitingChar` → captures `parser`. If the parser is deallocated while waiting for a target character, the closure keeps it alive indefinitely.
-- **Proposed Fix:** Change `[self]` to `[weak self]` with a `guard let self` inside the closure.
-- **Estimated Effort:** 15 min
-
-### [DEBT-010] Unknown keys silently suppressed in Normal/Visual mode
-
-- **Source:** Kiro DESIGN-4
-- **Location:** `PetruVim/Domain/Engine/VimEngine.swift` — `handleCommandMode`; `PetruVim/Domain/Engine/CommandParser.swift`
-- **Added:** 2026-03-20
-- **Impact:** `CommandParser.feed` returns `nil` for both "waiting for more input" (e.g., after `d`) and "unrecognized key, reset" (e.g., `q`, `z`, `r`). `VimEngine` treats both as suppress. Unrecognized keys like `q` never reach the host app.
-- **Proposed Fix:** Add a distinction in `CommandParser`'s return — e.g., a separate `Bool` flag, a two-value enum, or a dedicated `.unrecognized` case — so VimEngine can pass through genuinely unknown keys.
-- **Estimated Effort:** 2 hours (touches CommandParser return type, VimEngine, and tests)
 
 ### [DEBT-011] `ExcludedAppRow` calls `NSRunningApplication` on every SwiftUI render
 
@@ -114,3 +96,5 @@ _None._
 | DEBT-003 | Visual mode strips selection in MotionResolver | 2026-03-20 | Added `visualAnchor: Int?` param to MotionResolver.apply; selection computed internally; VimEngine simplified |
 | DEBT-007 | `executeStandalone(.paste)` ignores `count` | 2026-03-20 | `OperatorResolver.paste` now accepts `count` and repeats content; VimEngine passes actual count |
 | DEBT-008 | `yankWithMotion` excludes till motions from inclusive range | 2026-03-20 | Added `.tillForward`/`.tillBackward` to inclusive switch in `yankWithMotion`, mirroring `deleteWithMotion` |
+| DEBT-009 | Retain cycle in `awaitingChar` closure | 2026-03-20 | Changed `[self]` to `[weak self]`; count falls back to 1 if self is nil |
+| DEBT-010 | Unknown keys silently suppressed | 2026-03-20 | Added `VimCommand.passThrough`; CommandParser returns it for unknown keys; VimEngine returns false to pass key to host |

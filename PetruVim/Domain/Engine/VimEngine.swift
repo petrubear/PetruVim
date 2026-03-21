@@ -86,13 +86,14 @@ final class VimEngine {
             notifications.postModeChange(.insert)
 
         case .enterVisual:
-            mode = .visual
             var anchor: Int?
             try? textElement.updateFocusedElement { buffer in
                 anchor = buffer.cursorOffset
                 let selEnd = min(buffer.cursorOffset + 1, buffer.text.count)
                 return TextBuffer(buffer.text, cursor: buffer.cursorOffset, selection: buffer.cursorOffset..<selEnd)
             }
+            guard let anchor else { return }  // AX failed — stay in current mode
+            mode = .visual
             visualAnchor = anchor
             notifications.postModeChange(.visual)
 
@@ -115,7 +116,7 @@ final class VimEngine {
 
         case .operatorLine(let count, let op):
             var yanked: String?
-            try? textElement.updateFocusedElement { [self] buffer in
+            try? textElement.updateFocusedElement { buffer in
                 let result = OperatorResolver.applyToLine(op, count: count, buffer: buffer)
                 yanked = result.yankedText
                 return result.buffer

@@ -13,16 +13,17 @@ final class PermissionsManager {
         AXIsProcessTrustedWithOptions(options)
     }
 
-    /// Poll for permission changes. Calls `onChange` on the main actor when status changes.
+    /// Poll for permission changes. Calls `onChange` on the main actor whenever status changes.
+    /// Keeps running indefinitely so revocation is also detected.
     func observePermissionChanges(onChange: @escaping @MainActor (Bool) -> Void) {
-        let current = isAccessibilityGranted
         Task { @MainActor in
+            var current = isAccessibilityGranted
             while true {
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
                 let granted = AXIsProcessTrusted()
                 if granted != current {
+                    current = granted
                     onChange(granted)
-                    if granted { return }
                 }
             }
         }

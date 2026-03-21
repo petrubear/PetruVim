@@ -8,8 +8,8 @@ final class MockTextElement: TextElementPort {
     var writeCallCount = 0
     var lastWritten: TextBuffer?
 
-    func updateFocusedElement(_ transform: (TextBuffer) throws -> TextBuffer?) throws {
-        guard let newBuffer = try transform(buffer) else { return }
+    func updateFocusedElement(_ transform: (TextBuffer) throws -> TextBuffer) throws {
+        let newBuffer = try transform(buffer)
         buffer = newBuffer
         lastWritten = newBuffer
         writeCallCount += 1

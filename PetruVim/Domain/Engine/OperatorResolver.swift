@@ -12,8 +12,7 @@ enum OperatorResolver {
         motion: Motion,
         count: Int,
         buffer: TextBuffer,
-        register: String?,
-        lastChange: VimCommand?
+        register: String?
     ) -> OperatorResult {
         switch op {
         case .delete:

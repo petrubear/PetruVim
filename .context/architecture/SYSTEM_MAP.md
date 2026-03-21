@@ -58,9 +58,10 @@ Synthetic undo/redo are posted via `keyboard.postSyntheticEvent` using keyCode 6
 
 ## App Exclusion Flow
 
-1. `VimEngine.handleKeyEvent` queries `NSWorkspace.shared.frontmostApplication?.bundleIdentifier`
-2. If the bundle ID is in `ExcludedAppsStore.shared.excludedBundleIDs`, return `false` (pass-through)
-3. `SettingsView` lets users add running apps or remove entries from the exclusion list
+1. `AppCoordinator.startEngine()` installs `keyboard.preFilter` on `CGEventKeyboardAdapter` **before** `engine.start()`
+2. On every key-down, `preFilter` queries `NSWorkspace.shared.frontmostApplication?.bundleIdentifier` inside `MainActor.assumeIsolated { }`
+3. If the bundle ID is in `ExcludedAppsStore.shared`, `preFilter` returns `true` → event passes through unchanged; `VimEngine` never sees it
+4. `SettingsView` lets users add running apps or remove entries from the exclusion list
 
 ## Permissions
 
@@ -68,9 +69,9 @@ Synthetic undo/redo are posted via `keyboard.postSyntheticEvent` using keyCode 6
 if accessibility access is not granted. `AppCoordinator` polls until access is granted before
 starting the event tap.
 
-## Visual Mode (Planned)
+## Visual Mode
 
 - `VimEngine` stores `visualAnchor: Int` when entering visual mode via `v`
 - On each motion, new cursor is computed; selection = `min(anchor, cursor)..<max(anchor, cursor)+1`
-- `TextBuffer.selection` is set accordingly on every visual mode key event
-- Operators `d`/`c`/`y` in visual mode read `TextBuffer.selection` instead of a motion range
+- `MotionResolver.apply` receives `visualAnchor:` and computes the selection internally
+- Operators `d`/`c`/`y` in visual mode dispatch to `OperatorResolver.applyToVisualSelection`

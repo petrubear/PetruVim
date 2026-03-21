@@ -1,38 +1,31 @@
 # Session State
 
 **Last Updated:** 2026-03-20
-**Session Focus:** Technical debt resolution (P1, P2)
+**Session Focus:** Pre-external audit + debt resolution (DEBT-016 to DEBT-022)
 
 ## Session Summary
 
-Resolved DEBT-007, DEBT-008, DEBT-009, DEBT-010. 9 new tests added total this session.
-Previous session: resolved all open tasks (14, 15, 13), DEBT-001–003, Swift 6 migration.
+Full codebase audit prior to external review. Found and resolved 7 items (1 P1 concurrency issue,
+3 P2 code quality issues, 3 P3 doc drift items). 3 new tests added (lineDown count behavior).
 
-Build: 0 errors, 0 warnings. Tests: 156 (152 + 4 new).
+Build: 0 errors, 0 warnings. Tests: 159 (156 + 3 new).
 
 ## Completed This Session
 
-- [x] DEBT-007 — `paste` ignora `count`: `OperatorResolver.paste` ahora acepta `count` y repite el contenido; `VimEngine` pasa `count` en lugar de `1`
-- [x] DEBT-008 — `yankWithMotion` faltaba `.tillForward`/`.tillBackward` en el switch de motions inclusivos; añadidos para coincidir con `deleteWithMotion`
-- [x] DEBT-009 — Retain cycle en `awaitingChar`: `[self]` → `[weak self]`; count hace fallback a 1 si self es nil
-- [x] DEBT-010 — Keys desconocidas suprimidas: añadido `VimCommand.passThrough`; `CommandParser` retorna `.passThrough` para keys no reconocidas; `VimEngine` retorna `false` para dejarlas pasar al host
-- [x] Tests — 9 tests nuevos (5 OperatorResolver + 4 CommandParser)
-- [x] SwiftLint — `.swiftlint.yml` añadido; 91 violaciones → 0; correcciones en CGEventKeyboardAdapter, AXTextElementAdapter, KeyboardPort, OperatorResolver, VimEngine
-- [x] DEBT-011 — `ExcludedAppRow.app` movido a `@State` + `.onAppear`
-- [x] DEBT-012 — `applyCount` eliminado; call sites inlineados
-- [x] DEBT-013 — `moveVertical` combinado en un solo pass con `lineStarts[]`
-- [x] DEBT-014 — `preFilter` añadido a `CGEventKeyboardAdapter`; `AppCoordinator` lo instala antes de `engine.start()`
+- [x] Audit — full review of code vs. docs; 7 items catalogued as DEBT-016 to DEBT-022
+- [x] DEBT-016 — `preFilter` closure wrapped in `MainActor.assumeIsolated { }` (AppCoordinator); eliminates unverified cross-actor access to `ExcludedAppsStore`
+- [x] DEBT-017 — `lastChange: VimCommand?` dead parameter removed from `OperatorResolver.apply`; 3 call sites in VimEngine + 11 in OperatorResolverTests updated
+- [x] DEBT-018 — `readFocusedElement()` removed from `TextElementPort` protocol, `AXTextElementAdapter`, and `MockTextElement`; `TextElementPort` now exposes only `updateFocusedElement`
+- [x] DEBT-019 — `Motion.lineDown` fixed: `MotionResolver.apply` special-cases `.lineDown` with `count-1` downs + firstNonBlank; 3 tests added
+- [x] DEBT-020 — `SYSTEM_MAP.md` App Exclusion Flow updated to reflect preFilter/AppCoordinator; Visual Mode "(Planned)" replaced with real implementation description
+- [x] DEBT-021 — `ACTIVE_CONTEXT.md` stale Technical Notes (Task 14, 15, DEBT-001) and stale Open Question (Task 13) removed
+- [x] DEBT-022 — `SPEC.md` updated: `enum Operator` → `VimOperator`; VimEngine flow and Event Flow updated to `updateFocusedElement(transform:)`
 
 ## Previous Session Completed
 
-- [x] DEBT-001 — CGEvent re-entrancy: isSendingSyntheticEvent guard
-- [x] Task 14 — `.` repeat fully implemented
-- [x] Task 15 — Count prefix: VimCommand.standalone carries count; 3x deletes 3 chars
-- [x] Task 13 — LaunchAtLogin-Modern
-- [x] DEBT-002 — Force casts in AXTextElementAdapter restructured
-- [x] DEBT-003 — visualAnchor param in MotionResolver
-- [x] Bug fix — `a` at end of line
-- [x] Swift 6 migration
+- [x] DEBT-007 through DEBT-015 — all resolved
+- [x] Tasks 11–15 — all complete
+- [x] SwiftLint — 0 violations
 
 ## In Progress
 
@@ -44,13 +37,14 @@ _None_
 
 ## Next Session Priorities
 
-1. **DEBT-015** — AX re-fetch en cada write (P3, esfuerzo estimado: 3h)
-2. Añadir SwiftLint al build phase de Xcode (opcional)
+**Registro de deuda técnica: 0 ítems abiertos. Todas las tareas de código completas.**
+Único pendiente: Task 12 — integración manual en TextEdit (tarea del usuario).
+Opcional: añadir SwiftLint al build phase de Xcode.
 
 ## Build Status
 
 - **Last Build:** 2026-03-20 — BUILD SUCCEEDED, 0 warnings, Swift 6
-- **Test Results:** 156 tests, 0 failures (SwiftLint: 0 violations)
+- **Test Results:** 159 tests, 0 failures (SwiftLint: 0 violations)
 - **Coverage:** Not measured
 - **Issues:** None
 
@@ -69,14 +63,18 @@ Integration testing checklist (for user to run manually):
 9. Open Settings → add an app to exclude → verify keys pass through in that app
 ```
 
-Note: synthetic undo/redo re-entrancy is resolved — `isSendingSyntheticEvent` guard is in place.
-
 ## Files Modified This Session
 
-- `PetruVim/Domain/Engine/OperatorResolver.swift` — DEBT-007: paste count; DEBT-008: tillForward/tillBackward in yank
-- `PetruVim/Domain/Engine/VimEngine.swift` — DEBT-007: count passthrough; DEBT-010: passThrough handling
-- `PetruVim/Domain/Engine/CommandParser.swift` — DEBT-009: [weak self]; DEBT-010: .passThrough returns
-- `PetruVim/Domain/Models/VimCommand.swift` — DEBT-010: case passThrough added
-- `PetruVimTests/OperatorResolverTests.swift` — 5 new tests
-- `PetruVimTests/CommandParserTests.swift` — 4 new tests
-- `.context/` files — updated
+- `PetruVim/Application/AppCoordinator.swift` — DEBT-016: MainActor.assumeIsolated in preFilter
+- `PetruVim/Domain/Engine/OperatorResolver.swift` — DEBT-017: lastChange param removed
+- `PetruVim/Domain/Engine/VimEngine.swift` — DEBT-017: call sites updated
+- `PetruVim/Domain/Engine/MotionResolver.swift` — DEBT-019: lineDown count fix
+- `PetruVim/Domain/Ports/TextElementPort.swift` — DEBT-018: readFocusedElement removed
+- `PetruVim/Infrastructure/AXTextElementAdapter.swift` — DEBT-018: readFocusedElement removed
+- `PetruVimTests/Mocks.swift` — DEBT-018: readFocusedElement removed from MockTextElement
+- `PetruVimTests/MotionResolverTests.swift` — DEBT-019: 3 new lineDown tests
+- `PetruVimTests/OperatorResolverTests.swift` — DEBT-017: 11 call sites updated
+- `.context/architecture/SYSTEM_MAP.md` — DEBT-020
+- `.context/core/ACTIVE_CONTEXT.md` — DEBT-021
+- `.context/quality/TECHNICAL_DEBT.md` — audit registry
+- `SPEC.md` — DEBT-022

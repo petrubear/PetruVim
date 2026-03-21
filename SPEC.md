@@ -180,7 +180,7 @@ enum Motion: Equatable {
 
 ### Operator enum
 ```swift
-enum Operator: Equatable {
+enum VimOperator: Equatable {
     case delete, change, yank
     case deleteChar        // x
     case paste(before: Bool)  // p / P
@@ -202,7 +202,7 @@ enum Operator: Equatable {
 - Command/Option modified keys always pass through (never intercepted)
 
 ### VimEngine (@MainActor)
-1. Normal/Visual: feed event to parser → on complete command: `readFocusedElement` → resolve → `writeFocusedElement` → update register/lastChange → post mode notification
+1. Normal/Visual: feed event to parser → on complete command: `updateFocusedElement { transform }` (single read+write on same element) → update register/lastChange → post mode notification
 2. Insert: all keys pass through; on ESC record `insertedText` → transition to Normal
 3. Undo/Redo: synthesize Cmd-Z / Cmd-Shift-Z as CGEvents and post them
 4. Yank/delete syncs unnamed register to NSPasteboard on every operation
@@ -230,10 +230,8 @@ User presses 'd'
 
 User presses 'w'
   → CommandParser: returns .operatorMotion(count:1, .delete, .wordForward)
-  → VimEngine: readFocusedElement() → TextBuffer
-  → OperatorResolver.apply(.delete, .wordForward, …) → OperatorResult
-  → writeFocusedElement(result.buffer)
-  → clipboard.write(result.yankedText!)
+  → VimEngine: updateFocusedElement { buffer → OperatorResolver.apply(.delete, .wordForward, …) }
+  → clipboard.write(yankedText)
   → notifications.postModeChange(.normal)
   → returns true (suppress 'w')
 ```

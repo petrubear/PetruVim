@@ -1,7 +1,7 @@
 # Technical Debt Registry
 
 **Last Updated:** 2026-03-20
-**Total Items:** 1
+**Total Items:** 0
 **Critical (P0):** 0
 
 ## Priority Definitions
@@ -35,14 +35,7 @@ _None._
 
 ## P3 - Low Priority
 
-### [DEBT-015] `AXTextElementAdapter` re-fetches focused element on every write
-
-- **Source:** Kiro DESIGN-1
-- **Location:** `PetruVim/Infrastructure/AXTextElementAdapter.swift`
-- **Added:** 2026-03-20
-- **Impact:** `readFocusedElement` and `writeFocusedElement` each make two AX calls to obtain the focused element. Between read and write, focus can change, causing a write to the wrong element.
-- **Proposed Fix:** Accept `axElement` as a parameter to `writeFocusedElement`, or wrap both operations in a single method that reads, transforms, and writes atomically. Requires changing `TextElementPort`.
-- **Estimated Effort:** 3 hours (interface change + all implementations + tests)
+_None._
 
 ---
 
@@ -68,3 +61,11 @@ _None._
 | DEBT-012 | `applyCount` dead code | 2026-03-20 | Method deleted; all call sites inlined to return cmd directly |
 | DEBT-013 | `moveVertical` two-pass over allLines | 2026-03-20 | Single pass collects lineStarts[] and locates currentLine simultaneously |
 | DEBT-014 | Exclusion wrapper post-hoc on onKeyEvent | 2026-03-20 | Added preFilter to CGEventKeyboardAdapter; AppCoordinator installs it before engine.start() |
+| DEBT-015 | AX re-fetch on every write | 2026-03-20 | TextElementPort.writeFocusedElement replaced by updateFocusedElement(transform:); AXTextElementAdapter fetches element once per update; VimEngine migrated to closures |
+| DEBT-016 | `preFilter` accede a `@MainActor` sin aislamiento verificado | 2026-03-20 | Envuelto el closure de `preFilter` en `MainActor.assumeIsolated { }` en AppCoordinator; mismo patrón que `onKeyEvent` en VimEngine |
+| DEBT-017 | Parámetro muerto `lastChange` en `OperatorResolver.apply` | 2026-03-20 | Parámetro eliminado de la firma; todos los call sites (VimEngine ×3, OperatorResolverTests ×11) actualizados |
+| DEBT-018 | `readFocusedElement()` zombie en `TextElementPort` | 2026-03-20 | Método eliminado del protocolo, AXTextElementAdapter y MockTextElement; ningún call site existía en producción |
+| DEBT-019 | `Motion.lineDown` no avanza líneas con `count > 1` | 2026-03-20 | `apply()` en MotionResolver special-casea `.lineDown`: `count-1` downs + firstNonBlank; 3 tests añadidos |
+| DEBT-020 | `SYSTEM_MAP.md` desactualizado (App Exclusion Flow + Visual Mode) | 2026-03-20 | App Exclusion Flow actualizado a preFilter/AppCoordinator; Visual Mode "(Planned)" → implementación real documentada |
+| DEBT-021 | `ACTIVE_CONTEXT.md` con notas de deuda ya resuelta | 2026-03-20 | Sección Technical Notes eliminada (Task 14, 15, DEBT-001 ya cerrados); Open Question de Task 13 eliminada |
+| DEBT-022 | `SPEC.md` referencia API y nombre de tipo obsoletos | 2026-03-20 | `enum Operator` → `VimOperator`; flujo VimEngine y Event Flow actualizados a `updateFocusedElement(transform:)` |

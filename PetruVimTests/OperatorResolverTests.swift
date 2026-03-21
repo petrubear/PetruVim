@@ -12,7 +12,7 @@ final class OperatorResolverTests: XCTestCase {
     func test_delete_right_removesChar() {
         let result = OperatorResolver.apply(.delete, motion: .right, count: 1,
                                            buffer: buf("hello", cursor: 0),
-                                           register: nil, lastChange: nil)
+                                           register: nil)
         XCTAssertEqual(result.buffer.text, "ello")
         XCTAssertEqual(result.buffer.cursorOffset, 0)
         XCTAssertEqual(result.yankedText, "h")
@@ -21,7 +21,7 @@ final class OperatorResolverTests: XCTestCase {
     func test_delete_word_removesWord() {
         let result = OperatorResolver.apply(.delete, motion: .wordForward, count: 1,
                                            buffer: buf("hello world", cursor: 0),
-                                           register: nil, lastChange: nil)
+                                           register: nil)
         XCTAssertEqual(result.buffer.text, "world")
         XCTAssertNotNil(result.yankedText)
     }
@@ -29,7 +29,7 @@ final class OperatorResolverTests: XCTestCase {
     func test_delete_toLineEnd() {
         let result = OperatorResolver.apply(.delete, motion: .lineEnd, count: 1,
                                            buffer: buf("hello", cursor: 0),
-                                           register: nil, lastChange: nil)
+                                           register: nil)
         XCTAssertEqual(result.buffer.text, "")
         XCTAssertEqual(result.yankedText, "hello")
     }
@@ -39,7 +39,7 @@ final class OperatorResolverTests: XCTestCase {
     func test_yank_doesNotModifyText() {
         let b = buf("hello world", cursor: 0)
         let result = OperatorResolver.apply(.yank, motion: .wordForward, count: 1,
-                                           buffer: b, register: nil, lastChange: nil)
+                                           buffer: b, register: nil)
         XCTAssertEqual(result.buffer.text, "hello world")
         XCTAssertEqual(result.buffer.cursorOffset, 0)
         XCTAssertNotNil(result.yankedText)
@@ -103,7 +103,7 @@ final class OperatorResolverTests: XCTestCase {
     func test_deleteChar_removesCurrentChar() {
         let result = OperatorResolver.apply(.deleteChar, motion: .right, count: 1,
                                            buffer: buf("hello", cursor: 0),
-                                           register: nil, lastChange: nil)
+                                           register: nil)
         XCTAssertEqual(result.buffer.text, "ello")
         XCTAssertEqual(result.yankedText, "h")
     }
@@ -112,7 +112,7 @@ final class OperatorResolverTests: XCTestCase {
         // cursor at end of first line — x should not delete the newline
         let result = OperatorResolver.apply(.deleteChar, motion: .right, count: 1,
                                            buffer: buf("ab\ncd", cursor: 1),
-                                           register: nil, lastChange: nil)
+                                           register: nil)
         XCTAssertEqual(result.buffer.text, "a\ncd")
     }
 
@@ -121,21 +121,21 @@ final class OperatorResolverTests: XCTestCase {
     func test_paste_count1_insertsOnce() {
         let result = OperatorResolver.apply(.paste(before: false), motion: .right, count: 1,
                                            buffer: buf("ab", cursor: 0),
-                                           register: "X", lastChange: nil)
+                                           register: "X")
         XCTAssertEqual(result.buffer.text, "aXb")
     }
 
     func test_paste_count3_repeatsContent() {
         let result = OperatorResolver.apply(.paste(before: false), motion: .right, count: 3,
                                            buffer: buf("ab", cursor: 0),
-                                           register: "X", lastChange: nil)
+                                           register: "X")
         XCTAssertEqual(result.buffer.text, "aXXXb")
     }
 
     func test_paste_before_count2_repeatsContent() {
         let result = OperatorResolver.apply(.paste(before: true), motion: .right, count: 2,
                                            buffer: buf("ab", cursor: 1),
-                                           register: "Z", lastChange: nil)
+                                           register: "Z")
         XCTAssertEqual(result.buffer.text, "aZZb")
     }
 
@@ -152,9 +152,9 @@ final class OperatorResolverTests: XCTestCase {
         // delete same: deleteEnd = index(after: 3) = 4, deletes "hell", leaves "o"
         let b = buf("hello", cursor: 0)
         let yankResult = OperatorResolver.apply(.yank, motion: .tillForward("o"), count: 1,
-                                               buffer: b, register: nil, lastChange: nil)
+                                               buffer: b, register: nil)
         let deleteResult = OperatorResolver.apply(.delete, motion: .tillForward("o"), count: 1,
-                                                  buffer: b, register: nil, lastChange: nil)
+                                                  buffer: b, register: nil)
         XCTAssertEqual(yankResult.yankedText, deleteResult.yankedText,
                        "yt and dt on same motion must yank the same range")
     }
@@ -162,9 +162,9 @@ final class OperatorResolverTests: XCTestCase {
     func test_yank_tillBackward_matchesDelete() {
         let b = buf("hello", cursor: 4)
         let yankResult = OperatorResolver.apply(.yank, motion: .tillBackward("h"), count: 1,
-                                               buffer: b, register: nil, lastChange: nil)
+                                               buffer: b, register: nil)
         let deleteResult = OperatorResolver.apply(.delete, motion: .tillBackward("h"), count: 1,
-                                                  buffer: b, register: nil, lastChange: nil)
+                                                  buffer: b, register: nil)
         XCTAssertEqual(yankResult.yankedText, deleteResult.yankedText,
                        "yT and dT on same motion must yank the same range")
     }

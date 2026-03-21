@@ -55,9 +55,13 @@ final class AppCoordinator {
 
         // Install the exclusion pre-filter before engine.start() so it is never
         // overwritten by VimEngine and survives any future engine restart.
+        // MainActor.assumeIsolated: the CGEvent tap runs on CFRunLoopGetMain() (main thread),
+        // but the Swift compiler cannot verify this statically — same pattern as VimEngine.start().
         keyboard.preFilter = { _ in
-            guard let bundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier else { return false }
-            return ExcludedAppsStore.shared.isExcluded(bundleID)
+            MainActor.assumeIsolated {
+                guard let bundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier else { return false }
+                return ExcludedAppsStore.shared.isExcluded(bundleID)
+            }
         }
 
         engine = VimEngine(

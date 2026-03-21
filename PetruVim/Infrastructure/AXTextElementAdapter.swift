@@ -6,11 +6,6 @@ import ApplicationServices
 
 final class AXTextElementAdapter: TextElementPort {
 
-    func readFocusedElement() throws -> TextBuffer {
-        let axElement = try getFocusedAXElement()
-        return try readBuffer(from: axElement)
-    }
-
     func updateFocusedElement(_ transform: (TextBuffer) throws -> TextBuffer?) throws {
         let axElement = try getFocusedAXElement()
         let buffer = try readBuffer(from: axElement)

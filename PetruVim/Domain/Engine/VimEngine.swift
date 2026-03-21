@@ -105,7 +105,7 @@ final class VimEngine {
         case .operatorMotion(let count, let op, let motion):
             var yanked: String?
             try? textElement.updateFocusedElement { [self] buffer in
-                let result = OperatorResolver.apply(op, motion: motion, count: count, buffer: buffer, register: register, lastChange: lastChange)
+                let result = OperatorResolver.apply(op, motion: motion, count: count, buffer: buffer, register: register)
                 yanked = result.yankedText
                 return result.buffer
             }
@@ -157,7 +157,7 @@ final class VimEngine {
         case .deleteChar:
             var yanked: String?
             try? textElement.updateFocusedElement { [self] buffer in
-                let result = OperatorResolver.apply(.deleteChar, motion: .right, count: count, buffer: buffer, register: register, lastChange: lastChange)
+                let result = OperatorResolver.apply(.deleteChar, motion: .right, count: count, buffer: buffer, register: register)
                 yanked = result.yankedText
                 return result.buffer
             }
@@ -169,7 +169,7 @@ final class VimEngine {
             try? textElement.updateFocusedElement { [self] buffer in
                 OperatorResolver.apply(
                     .paste(before: before), motion: .right, count: count,
-                    buffer: buffer, register: register, lastChange: lastChange).buffer
+                    buffer: buffer, register: register).buffer
             }
             saveLastChange(.standalone(count: count, .paste(before: before)))
 

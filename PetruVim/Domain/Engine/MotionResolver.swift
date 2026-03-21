@@ -8,8 +8,16 @@ enum MotionResolver {
 
         guard !text.isEmpty else { return result }
 
-        for _ in 0..<max(count, 1) {
-            result = applySingle(motion, to: result)
+        if case .lineDown = motion {
+            // _ has special count semantics: go count-1 lines down, then first non-blank of that line
+            for _ in 0..<max(count - 1, 0) {
+                result = applySingle(.down, to: result)
+            }
+            result = applySingle(.lineDown, to: result)
+        } else {
+            for _ in 0..<max(count, 1) {
+                result = applySingle(motion, to: result)
+            }
         }
 
         if let anchorOffset = visualAnchor {

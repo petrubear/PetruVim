@@ -12,7 +12,7 @@ struct KeyEvent: Equatable {
     }
 
     var isCommandModified: Bool { modifiers.contains(.command) }
-    var isOptionModified:  Bool { modifiers.contains(.option) }
+    var isOptionModified: Bool { modifiers.contains(.option) }
 }
 
 protocol KeyboardPort: AnyObject {

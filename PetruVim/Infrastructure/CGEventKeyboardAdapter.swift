@@ -86,10 +86,10 @@ final class CGEventKeyboardAdapter: KeyboardPort {
         let flags = event.flags
 
         var modifiers = KeyEvent.Modifiers()
-        if flags.contains(.maskShift)     { modifiers.insert(.shift) }
-        if flags.contains(.maskControl)   { modifiers.insert(.control) }
+        if flags.contains(.maskShift) { modifiers.insert(.shift) }
+        if flags.contains(.maskControl) { modifiers.insert(.control) }
         if flags.contains(.maskAlternate) { modifiers.insert(.option) }
-        if flags.contains(.maskCommand)   { modifiers.insert(.command) }
+        if flags.contains(.maskCommand) { modifiers.insert(.command) }
 
         // Get characters
         var length = 0

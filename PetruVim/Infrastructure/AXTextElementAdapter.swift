@@ -1,3 +1,6 @@
+// swiftlint:disable force_cast
+// AXUIElement and AXValue are CFTypes — Swift 6 forbids as? on CFTypes
+// (always-succeed warning), so as! is the required pattern here.
 import Cocoa
 import ApplicationServices
 

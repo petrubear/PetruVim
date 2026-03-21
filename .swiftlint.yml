@@ -1,0 +1,56 @@
+excluded:
+  - .build
+  - DerivedData
+
+disabled_rules:
+  # AXTextElementAdapter requires blanket force_cast disable because
+  # AXUIElement and AXValue are CFTypes — Swift 6 forbids as? on CFTypes.
+  - blanket_disable_command
+
+# Line length: raised from default 120 to accommodate AX/CGEvent API call chains
+line_length:
+  warning: 160
+  error: 200
+  ignores_comments: true
+  ignores_urls: true
+
+# Identifier names: allow 1–2 char names conventional in this codebase:
+#   i/a/A/I/o/O — Vim entry-point command names (InsertEntryPoint enum)
+#   ch, op, ep  — character, operator, entry-point (domain shorthand)
+#   t, c        — text/character single-use locals in MotionResolver
+#   i           — standard for-loop counter
+identifier_name:
+  min_length:
+    warning: 1
+    error: 1
+  max_length:
+    warning: 40
+    error: 60
+  excluded:
+    # Vim command names: uppercase single-char is canonical (I, A, O entry points)
+    - I
+    - A
+    - O
+
+# Cyclomatic complexity: feedNormal (34) and MotionResolver.applySingle (31)
+# are inherently complex switch-driven state machines that cannot be split
+# without significant architecture changes.
+cyclomatic_complexity:
+  warning: 35
+  error: 60
+
+# Function body length: CommandParser.feedNormal has 139 lines of
+# key-dispatch branches that are intentionally co-located.
+function_body_length:
+  warning: 150
+  error: 300
+
+# Type body length: CommandParser has many key-dispatch branches
+type_body_length:
+  warning: 350
+  error: 500
+
+# Parameter count: OperatorResolver.apply takes 6 parameters by design
+function_parameter_count:
+  warning: 6
+  error: 8

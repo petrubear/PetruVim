@@ -2,7 +2,7 @@ import Foundation
 
 struct OperatorResult {
     var buffer: TextBuffer
-    var yankedText: String? = nil
+    var yankedText: String?
 }
 
 enum OperatorResolver {

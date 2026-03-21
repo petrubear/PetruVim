@@ -33,9 +33,8 @@ final class CommandParser {
                 return nil
             }
             let cmd = handler(ch)
-            let result = applyCount(to: cmd)
             reset()
-            return result
+            return cmd
         }
 
         guard let chars = event.characters, !chars.isEmpty else {
@@ -49,9 +48,8 @@ final class CommandParser {
             gPending = false
             if ch == "g" {
                 let cmd = resolveMotionOrOperator(.fileStart, mode: mode)
-                let result = applyCount(to: cmd)
                 reset()
-                return result
+                return cmd
             } else {
                 reset()
                 return .passThrough
@@ -64,9 +62,8 @@ final class CommandParser {
             if digit == "0" && countBuffer.isEmpty {
                 // 0 is lineStart motion
                 let cmd = resolveMotionOrOperator(.lineStart, mode: mode)
-                let result = applyCount(to: cmd)
                 resetAfterCommand()
-                return result
+                return cmd
             } else {
                 countBuffer.append(digit)
                 return nil
@@ -222,33 +219,29 @@ final class CommandParser {
         // G for fileEnd
         if ch == "G" {
             let cmd = resolveMotionOrOperator(.fileEnd, mode: .normal)
-            let result = applyCount(to: cmd)
             resetAfterCommand()
-            return result
+            return cmd
         }
 
         // $ for lineEnd
         if ch == "$" {
             let cmd = resolveMotionOrOperator(.lineEnd, mode: .normal)
-            let result = applyCount(to: cmd)
             resetAfterCommand()
-            return result
+            return cmd
         }
 
         // ^ for lineFirstNonBlank
         if ch == "^" {
             let cmd = resolveMotionOrOperator(.lineFirstNonBlank, mode: .normal)
-            let result = applyCount(to: cmd)
             resetAfterCommand()
-            return result
+            return cmd
         }
 
         // _ for lineDown
         if ch == "_" {
             let cmd = resolveMotionOrOperator(.lineDown, mode: .normal)
-            let result = applyCount(to: cmd)
             resetAfterCommand()
-            return result
+            return cmd
         }
 
         // Unknown key — pass through to host app
@@ -363,10 +356,5 @@ final class CommandParser {
             return .operatorMotion(count: currentCount(), op, motion)
         }
         return .motion(count: currentCount(), motion)
-    }
-
-    private func applyCount(to cmd: VimCommand) -> VimCommand {
-        // Count is already embedded in the command from resolveMotionOrOperator
-        return cmd
     }
 }

@@ -80,10 +80,7 @@ struct SettingsView: View {
 
 private struct ExcludedAppRow: View {
     let bundleID: String
-
-    private var app: NSRunningApplication? {
-        NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first
-    }
+    @State private var app: NSRunningApplication?
 
     var body: some View {
         HStack(spacing: 8) {
@@ -109,6 +106,9 @@ private struct ExcludedAppRow: View {
                         .foregroundStyle(.secondary)
                 }
             }
+        }
+        .onAppear {
+            app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first
         }
     }
 }

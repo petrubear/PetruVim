@@ -53,6 +53,13 @@ final class AppCoordinator {
         clipboardAdapter = clipboard
         notificationsAdapter = notifications
 
+        // Install the exclusion pre-filter before engine.start() so it is never
+        // overwritten by VimEngine and survives any future engine restart.
+        keyboard.preFilter = { _ in
+            guard let bundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier else { return false }
+            return ExcludedAppsStore.shared.isExcluded(bundleID)
+        }
+
         engine = VimEngine(
             textElement: textElement,
             keyboard: keyboard,
@@ -60,17 +67,6 @@ final class AppCoordinator {
             notifications: notifications
         )
         engine?.start()
-
-        // Wrap the keyboard handler to enforce the app exclusion list.
-        // VimEngine itself has no AppKit dependency; filtering happens here.
-        let originalHandler = keyboard.onKeyEvent
-        keyboard.onKeyEvent = { event in
-            if let bundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
-               ExcludedAppsStore.shared.isExcluded(bundleID) {
-                return false
-            }
-            return originalHandler?(event) ?? false
-        }
         menuBarController?.updateMode(.normal)
 
         // Observe mode changes to update menu bar

@@ -154,37 +154,31 @@ enum MotionResolver {
         let allLines = text.split(separator: "\n", omittingEmptySubsequences: false)
         guard !allLines.isEmpty else { return text.startIndex }
 
-        // Find current line number and column
-        var currentLine = 0
-        var lineStartOffset = 0
         let cursorOffset = text.distance(from: text.startIndex, to: cursor)
 
+        // Single pass: collect line start offsets and locate the current line simultaneously
+        var lineStarts = [Int]()
+        lineStarts.reserveCapacity(allLines.count)
+        var offset = 0
+        var currentLine = allLines.count - 1
+        var currentLineStart = 0
+        var foundCurrent = false
+
         for (i, line) in allLines.enumerated() {
-            let lineLength = line.count
-            let lineEndOffset = lineStartOffset + lineLength
-            if cursorOffset <= lineEndOffset {
+            lineStarts.append(offset)
+            if !foundCurrent && cursorOffset <= offset + line.count {
                 currentLine = i
-                break
+                currentLineStart = offset
+                foundCurrent = true
             }
-            lineStartOffset += lineLength + 1 // +1 for newline
-            if i == allLines.count - 1 {
-                currentLine = i
-            }
+            offset += line.count + 1
         }
 
-        let column = cursorOffset - lineStartOffset
-
+        let column = cursorOffset - currentLineStart
         let targetLine = max(0, min(allLines.count - 1, currentLine + lines))
-
-        // Calculate offset of target line start
-        var targetLineStart = 0
-        for i in 0..<targetLine {
-            targetLineStart += allLines[i].count + 1
-        }
-
         let targetLineLength = allLines[targetLine].count
         let targetColumn = min(column, max(targetLineLength - 1, 0))
-        let targetOffset = targetLineStart + targetColumn
+        let targetOffset = lineStarts[targetLine] + targetColumn
 
         let clampedOffset = max(0, min(targetOffset, text.count > 0 ? text.count - 1 : 0))
         return text.index(text.startIndex, offsetBy: clampedOffset)

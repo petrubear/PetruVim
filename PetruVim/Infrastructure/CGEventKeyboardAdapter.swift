@@ -3,6 +3,8 @@ import CoreGraphics
 
 final class CGEventKeyboardAdapter: KeyboardPort {
     var onKeyEvent: ((KeyEvent) -> Bool)?
+    /// Called before onKeyEvent. Return true to pass the event through to the host app unchanged.
+    var preFilter: ((KeyEvent) -> Bool)?
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -100,6 +102,9 @@ final class CGEventKeyboardAdapter: KeyboardPort {
 
         let keyEvent = KeyEvent(keyCode: keyCode, characters: characters, modifiers: modifiers)
 
+        if preFilter?(keyEvent) == true {
+            return Unmanaged.passUnretained(event)  // pre-filtered: pass through unchanged
+        }
         if let handler = onKeyEvent, handler(keyEvent) {
             return nil  // suppress
         }

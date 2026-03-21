@@ -1,8 +1,8 @@
 # Active Context
 
-**Current Focus:** Task 12 — Manual integration testing
+**Current Focus:** Task 12 — Manual integration testing (ongoing)
 **Started:** 2026-03-20
-**Target Completion:** Ongoing
+**Last Updated:** 2026-03-21
 **Priority:** P1
 
 ## Scope
@@ -15,11 +15,10 @@
 
 ### Files in Scope
 
-- Ninguno — todas las tareas de código están completas. Solo queda Task 12 (usuario).
+- Bug fixes as discovered during manual testing
 
 ### Files Out of Scope
 
-- `PetruVim/Presentation/` — UI is complete; do not modify unless wiring new feature
 - `PetruVim/Domain/Models/` — Models are stable
 - `PetruVim/Domain/Ports/` — Ports are stable
 - `PetruVim/Application/PermissionsManager.swift` — complete

@@ -1,29 +1,31 @@
 # Session State
 
-**Last Updated:** 2026-03-20
-**Session Focus:** Pre-external audit + debt resolution (DEBT-016 to DEBT-022) + Kiro audit fixes
+**Last Updated:** 2026-03-21
+**Session Focus:** Integration testing — bug fixes from manual testing
 
 ## Session Summary
 
-Full codebase audit prior to external review. Found and resolved 7 items (1 P1 concurrency issue,
-3 P2 code quality issues, 3 P3 doc drift items). 3 new tests added (lineDown count behavior).
-Subsequent Kiro audit resolved 3 additional bugs in PermissionsManager, TextElementPort, and VimEngine.
+Manual integration testing revealed 5 bugs, all fixed. Also landed pre-existing uncommitted work:
+custom status bar image, visual mode AX selection reading, and included-apps UI rename.
 
-Build: 0 errors, 0 warnings. Tests: 159 (156 + 3 new).
+Build: 0 errors, 0 warnings. Tests: 165 (159 + 6 new).
 
 ## Completed This Session
 
-- [x] Audit — full review of code vs. docs; 7 items catalogued as DEBT-016 to DEBT-022
-- [x] DEBT-016 — `preFilter` closure wrapped in `MainActor.assumeIsolated { }` (AppCoordinator); eliminates unverified cross-actor access to `ExcludedAppsStore`
-- [x] DEBT-017 — `lastChange: VimCommand?` dead parameter removed from `OperatorResolver.apply`; 3 call sites in VimEngine + 11 in OperatorResolverTests updated
-- [x] DEBT-018 — `readFocusedElement()` removed from `TextElementPort` protocol, `AXTextElementAdapter`, and `MockTextElement`; `TextElementPort` now exposes only `updateFocusedElement`
-- [x] DEBT-019 — `Motion.lineDown` fixed: `MotionResolver.apply` special-cases `.lineDown` with `count-1` downs + firstNonBlank; 3 tests added
-- [x] DEBT-020 — `SYSTEM_MAP.md` App Exclusion Flow updated to reflect preFilter/AppCoordinator; Visual Mode "(Planned)" replaced with real implementation description
-- [x] DEBT-021 — `ACTIVE_CONTEXT.md` stale Technical Notes (Task 14, 15, DEBT-001) and stale Open Question (Task 13) removed
-- [x] DEBT-022 — `SPEC.md` updated: `enum Operator` → `VimOperator`; VimEngine flow and Event Flow updated to `updateFocusedElement(transform:)`
-- [x] Kiro: `PermissionsManager.observePermissionChanges` — `current` moved inside loop; early-return on grant removed; polling now runs indefinitely detecting both grant and revocation
-- [x] Kiro: `TextElementPort.updateFocusedElement` transform signature changed `-> TextBuffer?` → `-> TextBuffer`; dead nil-path removed from AXTextElementAdapter and MockTextElement
-- [x] Kiro: `VimEngine .enterVisual` — `mode = .visual` / `visualAnchor` now only set after AX call succeeds; `guard let anchor else { return }` prevents entering visual mode with nil anchor
+- [x] Bug: empty inclusion list allowed vim in ALL apps — `isBlocked` now blocks all when list is empty
+- [x] Bug: ESC not working in unregistered apps — fixed as side effect of above (preFilter now correctly passes through all keys for unlisted apps)
+- [x] Bug: `$` cursor one position before end — `applySingle(.lineEnd)` now goes to `lineEndIndex` directly; removed `.lineEnd` from OperatorResolver inclusive list (ranges unchanged, cursor lands at visual end of line)
+- [x] Bug: `s` command not implemented — added `s` → `.operatorMotion(count, .change, .right)` in CommandParser
+- [x] Bug: visual mode `w` moved to start of next word instead of end of current word — `feedVisual` overrides `w`→`.wordEnd`, `W`→`.wordEndBig` before generic motionForChar
+- [x] Feat: custom status bar image (rounded rect + mode letter) in MenuBarController
+- [x] Feat: AX reads existing text selection back into TextBuffer on read (visual mode persistence)
+- [x] Chore: SettingsView + AppCoordinator renamed to IncludedApps model (was ExcludedApps)
+- [x] Chore: Assets.xcassets + AppIcon added to project
+
+## Previous Session Completed
+
+- [x] Audit — full review of code vs. docs; 7 items catalogued as DEBT-016 to DEBT-022 (all resolved)
+- [x] Kiro audit — 3 additional bugs resolved in PermissionsManager, TextElementPort, VimEngine
 
 ## Previous Session Completed
 
@@ -41,43 +43,39 @@ _None_
 
 ## Next Session Priorities
 
-**Registro de deuda técnica: 0 ítems abiertos. Todas las tareas de código completas.**
-Único pendiente: Task 12 — integración manual en TextEdit (tarea del usuario).
-Opcional: añadir SwiftLint al build phase de Xcode.
+**0 open debt items. All code tasks complete. Continue manual integration testing.**
+- Test `s`, `$`, visual `w`, and included-apps gating in TextEdit and other apps
 
 ## Build Status
 
-- **Last Build:** 2026-03-20 — BUILD SUCCEEDED, 0 warnings, Swift 6
-- **Test Results:** 159 tests, 0 failures (SwiftLint: 0 violations)
+- **Last Build:** 2026-03-21 — BUILD SUCCEEDED, 0 warnings, Swift 6
+- **Test Results:** 165 tests, 0 failures
 - **Coverage:** Not measured
 - **Issues:** None
 
 ## Handoff Notes
 
-Integration testing checklist (for user to run manually):
+Integration testing checklist (updated):
 ```
-1. Grant Accessibility permission when prompted
-2. Open TextEdit, create a new document with some text
-3. Click into the text area — should be in Normal mode (status bar shows N)
-4. Try: h l j k w b e 0 $ gg G
-5. Try: dd (delete line), dw (delete word), yy (yank), p (paste)
-6. Try: i (enter insert), type text, ESC (back to normal)
-7. Try: v (visual), extend with l/w, then d (delete selection)
-8. Try: u (undo), Ctrl-R (redo) — relies on synthetic Cmd-Z
-9. Open Settings → add an app to exclude → verify keys pass through in that app
+1. With NO apps in the list — all vim keys should be INACTIVE (pass through)
+2. Add TextEdit to the included list — vim keys active in TextEdit, not elsewhere
+3. In TextEdit: try $ → cursor should reach end of line (not one before)
+4. In TextEdit: try s → should delete char under cursor and enter insert mode
+5. In TextEdit: enter visual mode v, then press w → should select to word END (not start of next)
+6. In Alfred or other unlisted app: ESC should work normally (not suppressed)
+7. Try: h l j k w b e 0 $ gg G dd dw yy p i ESC v d u Ctrl-R
 ```
 
 ## Files Modified This Session
 
-- `PetruVim/Application/AppCoordinator.swift` — DEBT-016: MainActor.assumeIsolated in preFilter
-- `PetruVim/Application/PermissionsManager.swift` — Kiro: current moved inside loop; polling indefinite
-- `PetruVim/Domain/Engine/OperatorResolver.swift` — DEBT-017: lastChange param removed
-- `PetruVim/Domain/Engine/VimEngine.swift` — DEBT-017 call sites; Kiro: .enterVisual guard
-- `PetruVim/Domain/Engine/MotionResolver.swift` — DEBT-019: lineDown count fix
-- `PetruVim/Domain/Ports/TextElementPort.swift` — DEBT-018 + Kiro: non-optional transform
-- `PetruVim/Infrastructure/AXTextElementAdapter.swift` — DEBT-018 + Kiro: guard let removed
-- `PetruVimTests/Mocks.swift` — DEBT-018 + Kiro: MockTextElement updated
-- `PetruVimTests/MotionResolverTests.swift` — DEBT-019: 3 new lineDown tests
-- `PetruVimTests/OperatorResolverTests.swift` — DEBT-017: 11 call sites updated
-- `.context/` files — updated
-- `SPEC.md`, `AGENTS.md` — doc sync
+- `PetruVim/Application/ExcludedAppsStore.swift` — isBlocked: empty list now blocks all
+- `PetruVim/Application/AppCoordinator.swift` — IncludedAppsStore reference
+- `PetruVim/Domain/Engine/CommandParser.swift` — s command; visual w→wordEnd, W→wordEndBig
+- `PetruVim/Domain/Engine/MotionResolver.swift` — lineEnd goes to lineEndIndex directly
+- `PetruVim/Domain/Engine/OperatorResolver.swift` — lineEnd removed from inclusive list
+- `PetruVim/Presentation/MenuBarController.swift` — custom status bar image
+- `PetruVim/Presentation/SettingsView.swift` — included apps UI rename
+- `PetruVim/Infrastructure/AXTextElementAdapter.swift` — visual selection AX read
+- `PetruVimTests/CommandParserTests.swift` — s, visual w/W tests
+- `PetruVimTests/MotionResolverTests.swift` — lineEnd offset updated (4→5, 1→2)
+- `project.yml`, `project.pbxproj` — Assets.xcassets + AppIcon

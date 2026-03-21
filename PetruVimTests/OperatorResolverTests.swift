@@ -115,4 +115,57 @@ final class OperatorResolverTests: XCTestCase {
                                            register: nil, lastChange: nil)
         XCTAssertEqual(result.buffer.text, "a\ncd")
     }
+
+    // MARK: - Paste with count (DEBT-007)
+
+    func test_paste_count1_insertsOnce() {
+        let result = OperatorResolver.apply(.paste(before: false), motion: .right, count: 1,
+                                           buffer: buf("ab", cursor: 0),
+                                           register: "X", lastChange: nil)
+        XCTAssertEqual(result.buffer.text, "aXb")
+    }
+
+    func test_paste_count3_repeatsContent() {
+        let result = OperatorResolver.apply(.paste(before: false), motion: .right, count: 3,
+                                           buffer: buf("ab", cursor: 0),
+                                           register: "X", lastChange: nil)
+        XCTAssertEqual(result.buffer.text, "aXXXb")
+    }
+
+    func test_paste_before_count2_repeatsContent() {
+        let result = OperatorResolver.apply(.paste(before: true), motion: .right, count: 2,
+                                           buffer: buf("ab", cursor: 1),
+                                           register: "Z", lastChange: nil)
+        XCTAssertEqual(result.buffer.text, "aZZb")
+    }
+
+    // MARK: - Yank till motions inclusive (DEBT-008)
+
+    func test_yank_tillForward_isInclusiveOfCharBefore() {
+        // "yt," on "hello, world" from cursor 0 → yank "hello" (up to but not including comma, inclusive of char before)
+        // tillForward("o") from "hello" at 0 → motion lands at 3 (before 'o'), yank should be "hell"
+        // Actually till stops before target: cursor 0, "hello", till 'o' → dest=3, yank range [0,3] inclusive → "hell" + 'o'? No.
+        // deleteWithMotion and yankWithMotion: till is in inclusive set → end char IS included
+        // "hello", cursor=0, tillForward("o"): dest cursor=3 (the 'l'), then inclusive → index(after:3)=4 → yank "hell"
+        // Wait: tillForward lands just before 'o', so dest.cursorIndex = index of second 'l' (index 3)
+        // inclusive: end = max(from=0, to=3) = 3, yankEnd = index(after: 3) = 4, yank "hell"
+        // delete same: deleteEnd = index(after: 3) = 4, deletes "hell", leaves "o"
+        let b = buf("hello", cursor: 0)
+        let yankResult = OperatorResolver.apply(.yank, motion: .tillForward("o"), count: 1,
+                                               buffer: b, register: nil, lastChange: nil)
+        let deleteResult = OperatorResolver.apply(.delete, motion: .tillForward("o"), count: 1,
+                                                  buffer: b, register: nil, lastChange: nil)
+        XCTAssertEqual(yankResult.yankedText, deleteResult.yankedText,
+                       "yt and dt on same motion must yank the same range")
+    }
+
+    func test_yank_tillBackward_matchesDelete() {
+        let b = buf("hello", cursor: 4)
+        let yankResult = OperatorResolver.apply(.yank, motion: .tillBackward("h"), count: 1,
+                                               buffer: b, register: nil, lastChange: nil)
+        let deleteResult = OperatorResolver.apply(.delete, motion: .tillBackward("h"), count: 1,
+                                                  buffer: b, register: nil, lastChange: nil)
+        XCTAssertEqual(yankResult.yankedText, deleteResult.yankedText,
+                       "yT and dT on same motion must yank the same range")
+    }
 }

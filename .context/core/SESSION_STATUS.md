@@ -1,28 +1,31 @@
 # Session State
 
 **Last Updated:** 2026-03-20
-**Session Focus:** Task completion, debt resolution, Swift 6 migration
+**Session Focus:** Technical debt resolution (P1)
 
 ## Session Summary
 
-Full session: resolved all open tasks (14, 15, 13), all technical debt (DEBT-001 through DEBT-003),
-fixed a pre-existing bug in `a` entry point, and migrated to Swift 6 with strict concurrency.
+Resolved DEBT-007 (paste count) and DEBT-008 (yankWithMotion till motions). 5 new tests added.
+Previous session: resolved all open tasks (14, 15, 13), DEBT-001–003, Swift 6 migration.
 
-Build: 0 errors, 0 warnings, 147 tests pass (Swift 6 strict concurrency).
+Build: 0 errors, 0 warnings (last known). Tests: 147 + 5 new = 152 expected.
 
 ## Completed This Session
 
-- [x] TECHNICAL_DEBT.md — DEBT-004 moved to resolved
-- [x] ACTIVE_CONTEXT.md — updated scope/requirements for Tasks 12-15
-- [x] SESSION_STATUS.md — updated to current state
-- [x] DEBT-001 — CGEvent re-entrancy: `isSendingSyntheticEvent` flag added to CGEventKeyboardAdapter
-- [x] Task 14 — `.` repeat already fully implemented (CommandParser line 207 + VimEngine)
-- [x] Task 15 — Count prefix: `VimCommand.standalone` now carries count; `x`, `p`, `P` accept count; `3x` deletes 3 chars
-- [x] Task 13 — LaunchAtLogin-Modern: added to project.yml + toggle en SettingsView
-- [x] DEBT-002 — Force casts en AXTextElementAdapter: guards reestructurados, `as!` solo donde CFType lo requiere
-- [x] DEBT-003 — Visual selection movida a MotionResolver: nuevo param `visualAnchor: Int?`; VimEngine simplificado
-- [x] Bug fix — `a` al final de línea ahora avanza correctamente a `text.count` (insert mode semantics)
-- [x] Swift 6 — `SWIFT_VERSION: 6` en project.yml; corregidos 4 errores de strict concurrency (`ExcludedAppsStore`, `PermissionsManager`, `MenuBarController`, `AppCoordinator`)
+- [x] DEBT-007 — `paste` ignora `count`: `OperatorResolver.paste` ahora acepta `count` y repite el contenido; `VimEngine` pasa `count` en lugar de `1`
+- [x] DEBT-008 — `yankWithMotion` faltaba `.tillForward`/`.tillBackward` en el switch de motions inclusivos; añadidos para coincidir con `deleteWithMotion`
+- [x] Tests — 5 tests nuevos en `OperatorResolverTests`: paste count x1/x3/before-x2, yank till forward/backward
+
+## Previous Session Completed
+
+- [x] DEBT-001 — CGEvent re-entrancy: isSendingSyntheticEvent guard
+- [x] Task 14 — `.` repeat fully implemented
+- [x] Task 15 — Count prefix: VimCommand.standalone carries count; 3x deletes 3 chars
+- [x] Task 13 — LaunchAtLogin-Modern
+- [x] DEBT-002 — Force casts in AXTextElementAdapter restructured
+- [x] DEBT-003 — visualAnchor param in MotionResolver
+- [x] Bug fix — `a` at end of line
+- [x] Swift 6 migration
 
 ## In Progress
 
@@ -34,12 +37,10 @@ _None_
 
 ## Next Session Priorities
 
-1. **DEBT-007** — `paste` ignora `count` (P1)
-2. **DEBT-008** — `yankWithMotion` inconsistente con `deleteWithMotion` en till motions (P1)
-4. **DEBT-008** — `yankWithMotion` inconsistente con `deleteWithMotion` en till motions (P1)
-5. **DEBT-009** — Retain cycle `[self]` en `awaitingChar` closure (P2)
-6. **DEBT-010** — Keys desconocidas suprimidas silenciosamente (P2)
-7. Continuar con P2/P3 en orden del registro
+1. **DEBT-009** — Retain cycle `[self]` en `awaitingChar` closure (P2)
+2. **DEBT-010** — Keys desconocidas suprimidas silenciosamente (P2)
+3. **DEBT-011** — NSRunningApplication en cada render de SwiftUI (P2)
+4. Continuar con P3 en orden del registro
 
 ## Build Status
 
@@ -67,17 +68,7 @@ Note: synthetic undo/redo re-entrancy is resolved — `isSendingSyntheticEvent` 
 
 ## Files Modified This Session
 
-- `PetruVim/Infrastructure/CGEventKeyboardAdapter.swift` — DEBT-001: isSendingSyntheticEvent guard
-- `PetruVim/Infrastructure/AXTextElementAdapter.swift` — DEBT-002: restructured guards, removed unsafe force casts where possible
-- `PetruVim/Domain/Engine/MotionResolver.swift` — DEBT-003: visualAnchor param; fixed var→let warning
-- `PetruVim/Domain/Engine/VimEngine.swift` — DEBT-003: simplified motion case; bug fix `a` entry point
-- `PetruVim/Domain/Models/VimCommand.swift` — standalone now carries count
-- `PetruVim/Domain/Engine/CommandParser.swift` — x/p/P emit count; standalone uses new signature
-- `PetruVim/Application/ExcludedAppsStore.swift` — @MainActor (Swift 6)
-- `PetruVim/Application/PermissionsManager.swift` — @MainActor, @preconcurrency, Timer→Task.sleep
-- `PetruVim/Application/AppCoordinator.swift` — simplified callback, window height
-- `PetruVim/Presentation/MenuBarController.swift` — @MainActor (Swift 6)
-- `PetruVim/Presentation/SettingsView.swift` — LaunchAtLogin toggle, frame height
-- `project.yml` — SWIFT_VERSION 5.9→6, LaunchAtLogin-Modern SPM package
-- `PetruVimTests/CommandParserTests.swift` — updated standalone tests, added test_count_3x
-- `.context/` files — all updated to reflect current state
+- `PetruVim/Domain/Engine/OperatorResolver.swift` — DEBT-007: paste accepts count, repeats content; DEBT-008: tillForward/tillBackward added to yankWithMotion inclusive set
+- `PetruVim/Domain/Engine/VimEngine.swift` — DEBT-007: pass count instead of 1 to paste
+- `PetruVimTests/OperatorResolverTests.swift` — 5 new tests for paste count and yank till motions
+- `.context/` files — updated

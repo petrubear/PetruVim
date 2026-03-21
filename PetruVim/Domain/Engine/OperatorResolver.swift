@@ -29,7 +29,7 @@ enum OperatorResolver {
             return deleteChar(buffer: buffer, count: count)
 
         case .paste(let before):
-            return paste(register: register, before: before, buffer: buffer)
+            return paste(register: register, before: before, count: count, buffer: buffer)
 
         case .undo, .redo, .repeatLast:
             return OperatorResult(buffer: buffer, yankedText: nil)
@@ -220,7 +220,7 @@ enum OperatorResolver {
 
         let yankEnd: String.Index
         switch motion {
-        case .lineEnd, .findForward, .findBackward, .wordEnd, .wordEndBig:
+        case .lineEnd, .findForward, .findBackward, .tillForward, .tillBackward, .wordEnd, .wordEndBig:
             yankEnd = end < text.endIndex ? text.index(after: end) : end
         default:
             yankEnd = end
@@ -256,11 +256,12 @@ enum OperatorResolver {
         return OperatorResult(buffer: result, yankedText: yanked)
     }
 
-    private static func paste(register: String?, before: Bool, buffer: TextBuffer) -> OperatorResult {
+    private static func paste(register: String?, before: Bool, count: Int, buffer: TextBuffer) -> OperatorResult {
         guard let content = register, !content.isEmpty else {
             return OperatorResult(buffer: buffer)
         }
 
+        let repeated = String(repeating: content, count: max(count, 1))
         var text = buffer.text
         let cursor = buffer.cursorIndex
 
@@ -271,9 +272,9 @@ enum OperatorResolver {
             insertAt = cursor < text.endIndex ? text.index(after: cursor) : text.endIndex
         }
 
-        text.insert(contentsOf: content, at: insertAt)
+        text.insert(contentsOf: repeated, at: insertAt)
 
-        let newCursorOffset = text.distance(from: text.startIndex, to: insertAt) + content.count - 1
+        let newCursorOffset = text.distance(from: text.startIndex, to: insertAt) + repeated.count - 1
         let clampedCursor = max(0, min(newCursorOffset, text.count - 1))
         let result = TextBuffer(text, cursor: clampedCursor)
         return OperatorResult(buffer: result)

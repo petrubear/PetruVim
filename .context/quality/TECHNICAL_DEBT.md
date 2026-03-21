@@ -1,8 +1,8 @@
 # Technical Debt Registry
 
 **Last Updated:** 2026-03-20
-**Total Items:** 11
-**Critical (P0):** 1
+**Total Items:** 9
+**Critical (P0):** 0
 
 ## Priority Definitions
 
@@ -23,23 +23,7 @@ _None._
 
 ## P1 - High Priority
 
-### [DEBT-007] `executeStandalone(.paste)` ignores `count`
-
-- **Source:** Kiro BUG-4
-- **Location:** `PetruVim/Domain/Engine/VimEngine.swift` — `executeStandalone`
-- **Added:** 2026-03-20
-- **Impact:** `paste` receives `count` in the signature but calls `OperatorResolver.apply` with `count: 1` hardcoded. `3p` pastes only once.
-- **Proposed Fix:** Pass `count` through to `OperatorResolver.apply`. Verify `OperatorResolver` handles count for paste (repeats the insert N times).
-- **Estimated Effort:** 1 hour (includes OperatorResolver change + test)
-
-### [DEBT-008] `yankWithMotion` excludes `.tillForward`/`.tillBackward` from inclusive range
-
-- **Source:** Kiro BUG-5
-- **Location:** `PetruVim/Domain/Engine/OperatorResolver.swift` — `yankWithMotion`
-- **Added:** 2026-03-20
-- **Impact:** `deleteWithMotion` includes `.tillForward` and `.tillBackward` in its inclusive motions switch but `yankWithMotion` does not. `yt{char}` and `dt{char}` operate on different ranges, making yank and delete inconsistent.
-- **Proposed Fix:** Add `.tillForward` and `.tillBackward` to the inclusive motions switch in `yankWithMotion`, mirroring `deleteWithMotion`.
-- **Estimated Effort:** 15 min
+_None._
 
 ---
 
@@ -128,3 +112,5 @@ _None._
 | DEBT-006 | `applyToLine` cursor off-by-one on last line | 2026-03-20 | Introduced `cursorBase` computed before `rangeStart -= 1`; `newCursor` now uses `cursorBase` |
 | DEBT-002 | Force cast `app as! AXUIElement` | 2026-03-20 | Restructured guards to check `!= nil` before `as!`; `as!` retained for CFTypes (Swift 6 requires it) |
 | DEBT-003 | Visual mode strips selection in MotionResolver | 2026-03-20 | Added `visualAnchor: Int?` param to MotionResolver.apply; selection computed internally; VimEngine simplified |
+| DEBT-007 | `executeStandalone(.paste)` ignores `count` | 2026-03-20 | `OperatorResolver.paste` now accepts `count` and repeats content; VimEngine passes actual count |
+| DEBT-008 | `yankWithMotion` excludes till motions from inclusive range | 2026-03-20 | Added `.tillForward`/`.tillBackward` to inclusive switch in `yankWithMotion`, mirroring `deleteWithMotion` |

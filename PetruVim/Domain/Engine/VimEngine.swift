@@ -173,7 +173,7 @@ final class VimEngine {
                 register = clipboard.read()
             }
             guard let buffer = try? textElement.readFocusedElement() else { return }
-            let result = OperatorResolver.apply(.paste(before: before), motion: .right, count: 1, buffer: buffer, register: register, lastChange: lastChange)
+            let result = OperatorResolver.apply(.paste(before: before), motion: .right, count: count, buffer: buffer, register: register, lastChange: lastChange)
             try? textElement.writeFocusedElement(result.buffer)
             saveLastChange(.standalone(count: count, .paste(before: before)))
 

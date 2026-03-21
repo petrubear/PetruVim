@@ -109,14 +109,14 @@ final class MotionResolverTests: XCTestCase {
 
     func test_lineDown_count2_advancesOneLine() {
         // 2_ : first non-blank of next line
-        // "  hello\n  world" — 'w' is at offset 9
-        XCTAssertEqual(apply(.lineDown, to: "  hello\n  world", cursor: 0, count: 2), 9)
+        // "  hello\n  world" offsets: ' '(0)' '(1)'h'(2)..'o'(6)'\n'(7)' '(8)' '(9)'w'(10)
+        XCTAssertEqual(apply(.lineDown, to: "  hello\n  world", cursor: 0, count: 2), 10)
     }
 
     func test_lineDown_count3_advances2Lines() {
         // 3_ : first non-blank 2 lines below
-        // "a\n  b\n  c" — 'c' is at offset 7
-        XCTAssertEqual(apply(.lineDown, to: "a\n  b\n  c", cursor: 0, count: 3), 7)
+        // "a\n  b\n  c" offsets: 'a'(0)'\n'(1)' '(2)' '(3)'b'(4)'\n'(5)' '(6)' '(7)'c'(8)
+        XCTAssertEqual(apply(.lineDown, to: "a\n  b\n  c", cursor: 0, count: 3), 8)
     }
 
     // MARK: - gg / G

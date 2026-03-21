@@ -54,7 +54,7 @@ final class CommandParser {
                 return result
             } else {
                 reset()
-                return nil
+                return .passThrough
             }
         }
 
@@ -102,7 +102,7 @@ final class CommandParser {
         // Awaiting character motions
         if ch == "f" || ch == "F" || ch == "t" || ch == "T" {
             let op = pendingOperator
-            awaitingChar = { [self] foundChar in
+            awaitingChar = { [weak self] foundChar in
                 let motion: Motion
                 switch ch {
                 case "f": motion = .findForward(foundChar)
@@ -111,10 +111,11 @@ final class CommandParser {
                 case "T": motion = .tillBackward(foundChar)
                 default: motion = .findForward(foundChar)
                 }
+                let count = self?.currentCount() ?? 1
                 if let op = op {
-                    return .operatorMotion(count: self.currentCount(), op, motion)
+                    return .operatorMotion(count: count, op, motion)
                 }
-                return .motion(count: self.currentCount(), motion)
+                return .motion(count: count, motion)
             }
             return nil
         }
@@ -250,9 +251,9 @@ final class CommandParser {
             return result
         }
 
-        // Unknown key, reset
+        // Unknown key — pass through to host app
         reset()
-        return nil
+        return .passThrough
     }
 
     // MARK: - Visual mode
@@ -267,7 +268,7 @@ final class CommandParser {
 
         // Awaiting character motions
         if ch == "f" || ch == "F" || ch == "t" || ch == "T" {
-            awaitingChar = { [self] foundChar in
+            awaitingChar = { [weak self] foundChar in
                 let motion: Motion
                 switch ch {
                 case "f": motion = .findForward(foundChar)
@@ -276,7 +277,7 @@ final class CommandParser {
                 case "T": motion = .tillBackward(foundChar)
                 default: motion = .findForward(foundChar)
                 }
-                return .motion(count: self.currentCount(), motion)
+                return .motion(count: self?.currentCount() ?? 1, motion)
             }
             return nil
         }
@@ -322,8 +323,9 @@ final class CommandParser {
             return cmd
         }
 
+        // Unknown key — pass through to host app
         reset()
-        return nil
+        return .passThrough
     }
 
     // MARK: - Helpers

@@ -219,6 +219,29 @@ final class CommandParserTests: XCTestCase {
         XCTAssertEqual(feed("d"), .operatorLine(count: 1, .delete))
     }
 
+    // MARK: - Pass-through (DEBT-010)
+
+    func test_unknownKey_normal_passesThrough() {
+        XCTAssertEqual(feed("q"), .passThrough)
+    }
+
+    func test_unknownKey_normal_resetsState() {
+        XCTAssertNil(feed("d"))          // pending operator
+        XCTAssertEqual(feed("q"), .passThrough)
+        // parser is reset: d starts fresh
+        XCTAssertNil(feed("d"))
+        XCTAssertEqual(feed("d"), .operatorLine(count: 1, .delete))
+    }
+
+    func test_unknownKey_visual_passesThrough() {
+        XCTAssertEqual(feed("q", mode: .visual), .passThrough)
+    }
+
+    func test_g_unknownSecondKey_passesThrough() {
+        XCTAssertNil(feed("g"))
+        XCTAssertEqual(feed("q"), .passThrough)
+    }
+
     // MARK: - Visual mode
 
     func test_visual_h_returnsMotion() {

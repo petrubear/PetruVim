@@ -16,4 +16,5 @@ enum VimCommand: Equatable {
     case enterVisual
     case exitToNormal
     case standalone(count: Int, VimOperator)        // x, p, P, u, Ctrl-R, .
+    case passThrough                                // unrecognized key — let host app handle it
 }

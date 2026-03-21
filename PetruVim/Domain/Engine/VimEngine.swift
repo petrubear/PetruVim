@@ -65,6 +65,7 @@ final class VimEngine {
         guard let command = parser.feed(event, mode: mode) else {
             return true // Suppress key, waiting for more input
         }
+        if case .passThrough = command { return false }
         executeCommand(command)
         return true
     }
@@ -150,6 +151,9 @@ final class VimEngine {
 
         case .standalone(let count, let op):
             executeStandalone(op, count: count)
+
+        case .passThrough:
+            break
         }
     }
 
@@ -248,6 +252,7 @@ final class VimEngine {
     private func saveLastChange(_ command: VimCommand) {
         switch command {
         case .motion,
+             .passThrough,
              .standalone(_, .undo),
              .standalone(_, .redo),
              .standalone(_, .repeatLast):

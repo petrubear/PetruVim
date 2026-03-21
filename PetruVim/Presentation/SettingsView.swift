@@ -3,7 +3,7 @@ import AppKit
 import LaunchAtLogin
 
 struct SettingsView: View {
-    @State private var excludedIDs: [String] = []
+    @State private var includedIDs: [String] = []
     @State private var showingAppPicker = false
 
     var body: some View {
@@ -14,27 +14,27 @@ struct SettingsView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Excluded Applications")
+                Text("Included Applications")
                     .font(.headline)
-                Text("PetruVim will pass keys through to these apps unchanged.")
+                Text("Vim keys are active only in these apps. When the list is empty, Vim keys work everywhere.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
-            if excludedIDs.isEmpty {
-                Text("No apps excluded.")
+            if includedIDs.isEmpty {
+                Text("No apps added — Vim keys active everywhere.")
                     .foregroundStyle(.tertiary)
                     .frame(maxWidth: .infinity, minHeight: 120, alignment: .center)
                     .background(Color(NSColor.controlBackgroundColor))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             } else {
                 List {
-                    ForEach(excludedIDs, id: \.self) { bundleID in
+                    ForEach(includedIDs, id: \.self) { bundleID in
                         HStack {
-                            ExcludedAppRow(bundleID: bundleID)
+                            IncludedAppRow(bundleID: bundleID)
                             Spacer()
                             Button("Remove") {
-                                ExcludedAppsStore.shared.remove(bundleID: bundleID)
+                                IncludedAppsStore.shared.remove(bundleID: bundleID)
                                 reload()
                             }
                             .buttonStyle(.borderless)
@@ -60,9 +60,9 @@ struct SettingsView: View {
         .onAppear { reload() }
         .sheet(isPresented: $showingAppPicker) {
             AppPickerView(
-                alreadyExcluded: Set(excludedIDs),
+                alreadyIncluded: Set(includedIDs),
                 onSelect: { bundleID in
-                    ExcludedAppsStore.shared.add(bundleID: bundleID)
+                    IncludedAppsStore.shared.add(bundleID: bundleID)
                     reload()
                     showingAppPicker = false
                 },
@@ -72,13 +72,13 @@ struct SettingsView: View {
     }
 
     private func reload() {
-        excludedIDs = ExcludedAppsStore.shared.excludedBundleIDs
+        includedIDs = IncludedAppsStore.shared.includedBundleIDs
     }
 }
 
-// MARK: - Row showing one excluded app
+// MARK: - Row showing one included app
 
-private struct ExcludedAppRow: View {
+private struct IncludedAppRow: View {
     let bundleID: String
     @State private var app: NSRunningApplication?
 
@@ -116,7 +116,7 @@ private struct ExcludedAppRow: View {
 // MARK: - App picker sheet
 
 private struct AppPickerView: View {
-    let alreadyExcluded: Set<String>
+    let alreadyIncluded: Set<String>
     let onSelect: (String) -> Void
     let onDismiss: () -> Void
 
@@ -126,14 +126,14 @@ private struct AppPickerView: View {
                 guard let id = app.bundleIdentifier else { return false }
                 return app.activationPolicy == .regular
                     && id != Bundle.main.bundleIdentifier
-                    && !alreadyExcluded.contains(id)
+                    && !alreadyIncluded.contains(id)
             }
             .sorted { ($0.localizedName ?? "") < ($1.localizedName ?? "") }
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Select an app to exclude:")
+            Text("Select an app to include:")
                 .font(.headline)
 
             if runningApps.isEmpty {

@@ -10,6 +10,7 @@
 		051FAA53F4775B703310E831 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E913D98E872417C5F4BCF6C3 /* MenuBarController.swift */; };
 		0842EC70FC00DC4444C345BA /* CommandParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90ECA298A490512AC2078F36 /* CommandParserTests.swift */; };
 		088808B115B29AE1F22E08CC /* DistributedNotifAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14A61C8F1376892837D606E2 /* DistributedNotifAdapter.swift */; };
+		0FB33332C00320A92FAD5FDB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4FB0953159F4F03BEE5A9B4B /* Assets.xcassets */; };
 		2047901CC07C4A70E5839E57 /* VimError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB8A2DB215274E6622EBC2C /* VimError.swift */; };
 		23C93358C078E02FDD3E5A21 /* VimEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 537A6FFE41EA3E61659AD652 /* VimEngine.swift */; };
 		2455A6DE2E80159ED51ABAEB /* CGEventKeyboardAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC06837503228BD489353F3F /* CGEventKeyboardAdapter.swift */; };
@@ -64,6 +65,7 @@
 		3C7C0F1C3A6181002AE6DFDF /* MotionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionResolverTests.swift; sourceTree = "<group>"; };
 		3E4BE99BB327DC27D0ABE361 /* VimCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimCommand.swift; sourceTree = "<group>"; };
 		3F6D99472931582335071CFE /* ExcludedAppsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExcludedAppsStore.swift; sourceTree = "<group>"; };
+		4FB0953159F4F03BEE5A9B4B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		51611930B36240C41ECEE30C /* PetruVim.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PetruVim.entitlements; sourceTree = "<group>"; };
 		530119A8DCB16398C8043F37 /* NSPasteboardAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSPasteboardAdapter.swift; sourceTree = "<group>"; };
 		537A6FFE41EA3E61659AD652 /* VimEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimEngine.swift; sourceTree = "<group>"; };
@@ -189,6 +191,7 @@
 		E0111D586AB9AF2FFCDF2A1A /* PetruVim */ = {
 			isa = PBXGroup;
 			children = (
+				4FB0953159F4F03BEE5A9B4B /* Assets.xcassets */,
 				10BFB5AC8E4A3A86193C93EC /* Info.plist */,
 				C0E2D9CF34F6CF43E95368A3 /* main.swift */,
 				51611930B36240C41ECEE30C /* PetruVim.entitlements */,
@@ -233,6 +236,7 @@
 			buildConfigurationList = 6C8769C4928C7AEE9F18D11D /* Build configuration list for PBXNativeTarget "PetruVim" */;
 			buildPhases = (
 				9CF3706E4076E6624168426D /* Sources */,
+				3635BA6F815CA9E4AC957604 /* Resources */,
 				FB45AFEDF6FAECF2D4E04CFB /* Frameworks */,
 			);
 			buildRules = (
@@ -304,6 +308,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3635BA6F815CA9E4AC957604 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0FB33332C00320A92FAD5FDB /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		2CC6BE88DC33199FCE1CD8A2 /* Sources */ = {

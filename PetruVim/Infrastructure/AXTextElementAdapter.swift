@@ -64,6 +64,12 @@ final class AXTextElementAdapter: TextElementPort {
         let cursorOffset = cfRange.location
         let clampedOffset = min(max(cursorOffset, 0), text.count)
         let cursorIndex = text.index(text.startIndex, offsetBy: clampedOffset)
+
+        if cfRange.length > 0 {
+            let selEnd = min(clampedOffset + cfRange.length, text.count)
+            let selEndIndex = text.index(text.startIndex, offsetBy: selEnd)
+            return TextBuffer(text: text, cursorIndex: cursorIndex, selectionRange: cursorIndex..<selEndIndex)
+        }
         return TextBuffer(text: text, cursorIndex: cursorIndex)
     }
 

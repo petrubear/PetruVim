@@ -60,7 +60,7 @@ final class AppCoordinator {
         keyboard.preFilter = { _ in
             MainActor.assumeIsolated {
                 guard let bundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier else { return false }
-                return ExcludedAppsStore.shared.isExcluded(bundleID)
+                return IncludedAppsStore.shared.isBlocked(bundleID)
             }
         }
 
@@ -105,6 +105,7 @@ final class AppCoordinator {
             defer: false
         )
         window.title = "PetruVim Settings"
+        window.isReleasedWhenClosed = false
         window.contentViewController = NSHostingController(rootView: SettingsView())
         window.center()
         window.makeKeyAndOrderFront(nil)

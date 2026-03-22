@@ -1,6 +1,6 @@
 # Technical Debt Registry
 
-**Last Updated:** 2026-03-20
+**Last Updated:** 2026-03-21
 **Total Items:** 0
 **Critical (P0):** 0
 
@@ -72,3 +72,9 @@ _None._
 | Kiro-1 | `observePermissionChanges` no detecta revocación de permisos | 2026-03-20 | `current` movido dentro del loop como `var`; early-return on grant eliminado; polling corre indefinidamente |
 | Kiro-2 | `updateFocusedElement` transform `-> TextBuffer?` — nil path nunca usado | 2026-03-20 | Firma cambiada a `-> TextBuffer`; `guard let` muerto eliminado de AXTextElementAdapter y MockTextElement |
 | Kiro-3 | `.enterVisual` cambia mode antes del AX call — estado inconsistente si falla | 2026-03-20 | `mode = .visual` / `visualAnchor` asignados solo si AX call tiene éxito; `guard let anchor else { return }` |
+| AUDIT-001 | `ExcludedAppsStore.swift` file name ≠ class name; inverted `isBlocked` semantics | 2026-03-21 | Fixed `isBlocked` empty-list bug; renamed file to `IncludedAppsStore.swift` |
+| AUDIT-003 | Wrong cursor position after last-line `dd` | 2026-03-21 | Cursor now goes to firstNonBlank after last-line dd |
+| AUDIT-004 | Notification observer token leaked in `startEngine()` | 2026-03-21 | Stored observer token; removed in `stop()` and before re-creation |
+| AUDIT-006 | `reset` / `resetAfterCommand` duplication | 2026-03-21 | `resetAfterCommand` now calls `reset()` |
+| AUDIT-007 | `s` key ignores pending operator | 2026-03-21 | `s` checks `pendingOperator` first, passes through if set |
+| AUDIT-008 | Dead `motion: .right` argument in `deleteChar` dispatch | 2026-03-21 | Clarified dead `motion` and `register` args in `deleteChar` dispatch |

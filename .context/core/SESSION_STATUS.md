@@ -1,37 +1,33 @@
 # Session State
 
 **Last Updated:** 2026-03-21
-**Session Focus:** Integration testing — bug fixes from manual testing
+**Session Focus:** Kiro audit review — validate, fix real issues, discard false positives
 
 ## Session Summary
 
-Manual integration testing revealed 5 bugs, all fixed. Also landed pre-existing uncommitted work:
-custom status bar image, visual mode AX selection reading, and included-apps UI rename.
+Reviewed 15 items from Kiro's code audit (AUDIT-001 to AUDIT-015). Validated each against actual
+code: 6 were real issues (fixed), 8 were false positives (discarded), 1 was a duplicate.
 
-Build: 0 errors, 0 warnings. Tests: 165 (159 + 6 new).
+Build: 0 errors, 0 warnings. Tests: 165, 0 failures.
 
 ## Completed This Session
 
-- [x] Bug: empty inclusion list allowed vim in ALL apps — `isBlocked` now blocks all when list is empty
-- [x] Bug: ESC not working in unregistered apps — fixed as side effect of above (preFilter now correctly passes through all keys for unlisted apps)
-- [x] Bug: `$` cursor one position before end — `applySingle(.lineEnd)` now goes to `lineEndIndex` directly; removed `.lineEnd` from OperatorResolver inclusive list (ranges unchanged, cursor lands at visual end of line)
-- [x] Bug: `s` command not implemented — added `s` → `.operatorMotion(count, .change, .right)` in CommandParser
-- [x] Bug: visual mode `w` moved to start of next word instead of end of current word — `feedVisual` overrides `w`→`.wordEnd`, `W`→`.wordEndBig` before generic motionForChar
-- [x] Feat: custom status bar image (rounded rect + mode letter) in MenuBarController
-- [x] Feat: AX reads existing text selection back into TextBuffer on read (visual mode persistence)
-- [x] Chore: SettingsView + AppCoordinator renamed to IncludedApps model (was ExcludedApps)
-- [x] Chore: Assets.xcassets + AppIcon added to project
+- [x] AUDIT-001 (P1): `isBlocked` with empty list disabled Vim everywhere — added empty-list guard; renamed file `ExcludedAppsStore.swift` → `IncludedAppsStore.swift`
+- [x] AUDIT-004 (P2): Notification observer token leaked in `startEngine()` — stored token, removed in `stop()` and before re-creation
+- [x] AUDIT-003 (P3): Cursor after last-line `dd` went to raw offset — now goes to firstNonBlank of the resulting last line
+- [x] AUDIT-006 (P3): `resetAfterCommand` duplicated `reset()` body — now delegates to `reset()`
+- [x] AUDIT-007 (P3): `s` ignored `pendingOperator` — `ds` now passes through instead of firing `change+right`
+- [x] AUDIT-008 (P3): Dead `motion: .right` and `register` args in `deleteChar` dispatch — cleaned up, removed unused `[self]` capture
+- [x] Discarded 8 false positives: AUDIT-002 (l motion correct), AUDIT-005 (polling intentional), AUDIT-009/014 (try? by design), AUDIT-010 ([weak self] needed), AUDIT-011 (no underflow), AUDIT-012 (trivial perf), AUDIT-015 (dup of 001)
+- [x] Updated TECHNICAL_DEBT.md — 2 open items remain (AUDIT-009 debug logging, AUDIT-013 app picker enhancement)
 
 ## Previous Session Completed
 
-- [x] Audit — full review of code vs. docs; 7 items catalogued as DEBT-016 to DEBT-022 (all resolved)
-- [x] Kiro audit — 3 additional bugs resolved in PermissionsManager, TextElementPort, VimEngine
-
-## Previous Session Completed
-
-- [x] DEBT-007 through DEBT-015 — all resolved
-- [x] Tasks 11–15 — all complete
-- [x] SwiftLint — 0 violations
+- [x] Integration testing — 5 bugs found and fixed ($, s, visual w, included-apps gating, ESC)
+- [x] Custom status bar image, AX visual selection reading, included-apps UI rename
+- [x] Kiro audit round 1 — 3 bugs resolved (PermissionsManager, TextElementPort, VimEngine)
+- [x] Full code audit — DEBT-007 to DEBT-022 all resolved
+- [x] Tasks 1–15 all complete; SwiftLint 0 violations
 
 ## In Progress
 
@@ -44,7 +40,7 @@ _None_
 ## Next Session Priorities
 
 **0 open debt items. All code tasks complete. Continue manual integration testing.**
-- Test `s`, `$`, visual `w`, and included-apps gating in TextEdit and other apps
+- Re-test the `isBlocked` empty-list fix: with NO apps in list, Vim should now be ACTIVE everywhere
 
 ## Build Status
 
@@ -57,25 +53,22 @@ _None_
 
 Integration testing checklist (updated):
 ```
-1. With NO apps in the list — all vim keys should be INACTIVE (pass through)
-2. Add TextEdit to the included list — vim keys active in TextEdit, not elsewhere
-3. In TextEdit: try $ → cursor should reach end of line (not one before)
+1. With NO apps in the list — all vim keys should be ACTIVE everywhere (empty list = active everywhere)
+2. Add TextEdit to the included list — vim keys active ONLY in TextEdit, not elsewhere
+3. In TextEdit: try $ → cursor should reach end of line
 4. In TextEdit: try s → should delete char under cursor and enter insert mode
-5. In TextEdit: enter visual mode v, then press w → should select to word END (not start of next)
-6. In Alfred or other unlisted app: ESC should work normally (not suppressed)
+5. In TextEdit: enter visual mode v, then press w → should select to word END
+6. In Alfred or other unlisted app (with non-empty list): ESC should work normally
 7. Try: h l j k w b e 0 $ gg G dd dw yy p i ESC v d u Ctrl-R
+8. Delete last line with dd — cursor should go to first non-blank of the now-last line
 ```
 
 ## Files Modified This Session
 
-- `PetruVim/Application/ExcludedAppsStore.swift` — isBlocked: empty list now blocks all
-- `PetruVim/Application/AppCoordinator.swift` — IncludedAppsStore reference
-- `PetruVim/Domain/Engine/CommandParser.swift` — s command; visual w→wordEnd, W→wordEndBig
-- `PetruVim/Domain/Engine/MotionResolver.swift` — lineEnd goes to lineEndIndex directly
-- `PetruVim/Domain/Engine/OperatorResolver.swift` — lineEnd removed from inclusive list
-- `PetruVim/Presentation/MenuBarController.swift` — custom status bar image
-- `PetruVim/Presentation/SettingsView.swift` — included apps UI rename
-- `PetruVim/Infrastructure/AXTextElementAdapter.swift` — visual selection AX read
-- `PetruVimTests/CommandParserTests.swift` — s, visual w/W tests
-- `PetruVimTests/MotionResolverTests.swift` — lineEnd offset updated (4→5, 1→2)
-- `project.yml`, `project.pbxproj` — Assets.xcassets + AppIcon
+- `PetruVim/Application/ExcludedAppsStore.swift` → deleted (renamed to IncludedAppsStore.swift)
+- `PetruVim/Application/IncludedAppsStore.swift` — new file; `isBlocked` empty-list guard added
+- `PetruVim/Application/AppCoordinator.swift` — observer token stored + cleanup in stop()/startEngine()
+- `PetruVim/Domain/Engine/CommandParser.swift` — `resetAfterCommand` delegates to `reset()`; `s` checks `pendingOperator`
+- `PetruVim/Domain/Engine/OperatorResolver.swift` — `dd` last-line cursor goes to firstNonBlank
+- `PetruVim/Domain/Engine/VimEngine.swift` — removed dead `[self]` capture and misleading `register` arg in deleteChar
+- `.context/quality/TECHNICAL_DEBT.md` — 6 items resolved, 8 false positives removed

@@ -9,7 +9,7 @@ Domain (pure Swift — no UIKit/AppKit imports)
   Engine:   CommandParser · MotionResolver · OperatorResolver · VimEngine (@MainActor)
 
 Application
-  AppCoordinator (@MainActor) · PermissionsManager · ExcludedAppsStore
+  AppCoordinator (@MainActor) · PermissionsManager · IncludedAppsStore
 
 Infrastructure (implements Ports)
   AXTextElementAdapter    ← TextElementPort
@@ -34,7 +34,7 @@ Presentation
 | `VimOperator` | Not `Operator` — avoids Swift keyword conflict |
 | `InsertEntryPoint` | Enum: `i, a, I, A, o, O` |
 | `KeyEvent.Modifiers` | OptionSet: `shift, control, option, command` |
-| `ExcludedAppsStore.shared` | Singleton — in-memory Set + UserDefaults persistence |
+| `IncludedAppsStore.shared` | Singleton — in-memory Set + UserDefaults persistence |
 | `TextBuffer` | Holds `text: String`, `cursorOffset: Int`, `selection: Range<Int>?` |
 
 ## Notification Flow (mode changes)
@@ -56,12 +56,13 @@ VimEngine
 On each event, `preFilter` is checked first (installed by `AppCoordinator`); if it returns `true` the event passes through unchanged. Otherwise the event is forwarded to `VimEngine.handleKeyEvent(_:)` via the `KeyboardPort.onKeyEvent` callback.
 Synthetic undo/redo are posted via `keyboard.postSyntheticEvent` using keyCode 6 (Z) with Cmd/Cmd-Shift.
 
-## App Exclusion Flow
+## App Inclusion Flow
 
-1. `AppCoordinator.startEngine()` installs `keyboard.preFilter` on `CGEventKeyboardAdapter` **before** `engine.start()`
+1. `AppCoordinator.startEngine()` installs `keyboard.preFilter` on `CGEventKeyboardAdapter` **before** `engine.start()`; also stores the mode-change observer token and removes any previous one
 2. On every key-down, `preFilter` queries `NSWorkspace.shared.frontmostApplication?.bundleIdentifier` inside `MainActor.assumeIsolated { }`
-3. If the bundle ID is in `ExcludedAppsStore.shared`, `preFilter` returns `true` → event passes through unchanged; `VimEngine` never sees it
-4. `SettingsView` lets users add running apps or remove entries from the exclusion list
+3. `IncludedAppsStore.shared.isBlocked(bundleID)` returns `true` if the app is NOT in the included list (and the list is non-empty); empty list → Vim active everywhere
+4. If `isBlocked` returns `true`, `preFilter` returns `true` → event passes through unchanged; `VimEngine` never sees it
+5. `SettingsView` lets users add running apps or remove entries from the inclusion list
 
 ## Permissions
 

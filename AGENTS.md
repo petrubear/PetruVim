@@ -53,7 +53,7 @@ PetruVim/
     │   ├── Models/              VimMode, TextBuffer, Motion, VimOperator, VimCommand, VimError
     │   ├── Ports/               TextElementPort, KeyboardPort, ClipboardPort, NotificationPort
     │   └── Engine/              CommandParser, MotionResolver, OperatorResolver, VimEngine
-    ├── Application/             AppCoordinator, PermissionsManager, ExcludedAppsStore
+    ├── Application/             AppCoordinator, PermissionsManager, IncludedAppsStore
     ├── Infrastructure/          AXTextElementAdapter, CGEventKeyboardAdapter, NSPasteboardAdapter, DistributedNotifAdapter
     └── Presentation/            MenuBarController, PermissionsView, SettingsView
 ```
@@ -66,7 +66,7 @@ PetruVim/
 - `LSUIElement = YES` — menu bar only, no Dock icon
 - Use `VimOperator` (not `Operator` — Swift keyword conflict)
 - Error handling: throw `VimError`, don't return optionals from engine methods
-- Key exclusion is enforced via `CGEventKeyboardAdapter.preFilter` (installed in `AppCoordinator`), not inside `VimEngine` — `ExcludedAppsStore.shared` must be accessed inside `MainActor.assumeIsolated { }`
+- Key exclusion is enforced via `CGEventKeyboardAdapter.preFilter` (installed in `AppCoordinator`), not inside `VimEngine` — `IncludedAppsStore.shared` must be accessed inside `MainActor.assumeIsolated { }`
 
 ## Context Files
 
@@ -101,4 +101,4 @@ resolve SPM packages (LaunchAtLogin-Modern), build and test in TextEdit.
 - `app as! AXUIElement` in `AXTextElementAdapter` is correct — Swift 6 requires `as!` for CFTypes (`as?` is a compile error)
 - Synthetic undo/redo events are posted at `.cghidEventTap` level — they bypass the session tap entirely, so no re-entrancy guard is needed
 - `MotionResolver.apply` accepts `visualAnchor: Int?` — pass it in visual mode to compute selection internally
-- `@MainActor` is required on: `VimEngine`, `AppCoordinator`, `PermissionsManager`, `ExcludedAppsStore`, `MenuBarController`
+- `@MainActor` is required on: `VimEngine`, `AppCoordinator`, `PermissionsManager`, `IncludedAppsStore`, `MenuBarController`

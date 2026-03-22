@@ -25,4 +25,4 @@
 
 ## Open Questions
 
-- Visual linewise mode `V` — not in MVP scope per SPEC.md; confirm before implementing
+- Visual linewise mode `V` — not in MVP scope; confirm before implementing

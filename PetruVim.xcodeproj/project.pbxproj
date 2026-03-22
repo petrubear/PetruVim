@@ -24,12 +24,12 @@
 		529A9C286411E74C946DDD36 /* LaunchAtLogin in Frameworks */ = {isa = PBXBuildFile; productRef = 84C32B1380F005806F154C84 /* LaunchAtLogin */; };
 		53C89C0D3D2F74DF512532D7 /* Operator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E383BE11ACE0D4A2E8ACA21E /* Operator.swift */; };
 		594B663C19B34F230FFF2FF6 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E2D9CF34F6CF43E95368A3 /* main.swift */; };
-		59971960381203147B8C33AC /* ExcludedAppsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F6D99472931582335071CFE /* ExcludedAppsStore.swift */; };
 		5DA46D05D2F59882D9979DC7 /* ClipboardPort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046AD1E5AD7DC4D08290F2FE /* ClipboardPort.swift */; };
 		697C89EC41F80DDBCFCCA066 /* VimCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4BE99BB327DC27D0ABE361 /* VimCommand.swift */; };
 		85F8851BA84FF21EFC4EEA43 /* Motion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B4AFE85E022C46A6AABBCA /* Motion.swift */; };
 		8A4E420ECFA79D95EC1A6750 /* NSPasteboardAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 530119A8DCB16398C8043F37 /* NSPasteboardAdapter.swift */; };
 		940D7F57433B66B09A4BC839 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A692EE6BD7CBA01276CD740 /* AppCoordinator.swift */; };
+		969CE0B182A4FD8B35A99846 /* IncludedAppsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC69205A49B1E22CDC16F2C /* IncludedAppsStore.swift */; };
 		9CC909B225A952E1A97322B8 /* NotificationPort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EC4BB5088A8C52BE7845EE /* NotificationPort.swift */; };
 		9E19D04E32951702B8C84982 /* AXTextElementAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBE1FA06147C16CF11B991F /* AXTextElementAdapter.swift */; };
 		B562E44C70D27638D82ACF2B /* Mocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = F13B7211D1B95E9BB42A4BE2 /* Mocks.swift */; };
@@ -61,10 +61,10 @@
 		10BFB5AC8E4A3A86193C93EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		1409D3962D23FD750C7609E0 /* PetruVimApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetruVimApp.swift; sourceTree = "<group>"; };
 		14A61C8F1376892837D606E2 /* DistributedNotifAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistributedNotifAdapter.swift; sourceTree = "<group>"; };
+		2DC69205A49B1E22CDC16F2C /* IncludedAppsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncludedAppsStore.swift; sourceTree = "<group>"; };
 		3BB8A2DB215274E6622EBC2C /* VimError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimError.swift; sourceTree = "<group>"; };
 		3C7C0F1C3A6181002AE6DFDF /* MotionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionResolverTests.swift; sourceTree = "<group>"; };
 		3E4BE99BB327DC27D0ABE361 /* VimCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimCommand.swift; sourceTree = "<group>"; };
-		3F6D99472931582335071CFE /* ExcludedAppsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExcludedAppsStore.swift; sourceTree = "<group>"; };
 		4FB0953159F4F03BEE5A9B4B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		51611930B36240C41ECEE30C /* PetruVim.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PetruVim.entitlements; sourceTree = "<group>"; };
 		530119A8DCB16398C8043F37 /* NSPasteboardAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSPasteboardAdapter.swift; sourceTree = "<group>"; };
@@ -171,7 +171,7 @@
 			isa = PBXGroup;
 			children = (
 				7A692EE6BD7CBA01276CD740 /* AppCoordinator.swift */,
-				3F6D99472931582335071CFE /* ExcludedAppsStore.swift */,
+				2DC69205A49B1E22CDC16F2C /* IncludedAppsStore.swift */,
 				DB39D084B46A795136E7DF20 /* PermissionsManager.swift */,
 			);
 			path = Application;
@@ -344,7 +344,7 @@
 				5DA46D05D2F59882D9979DC7 /* ClipboardPort.swift in Sources */,
 				4681D63FD94E750F5B228439 /* CommandParser.swift in Sources */,
 				088808B115B29AE1F22E08CC /* DistributedNotifAdapter.swift in Sources */,
-				59971960381203147B8C33AC /* ExcludedAppsStore.swift in Sources */,
+				969CE0B182A4FD8B35A99846 /* IncludedAppsStore.swift in Sources */,
 				EF6DC1F9D90355FC8D31E03E /* KeyboardPort.swift in Sources */,
 				051FAA53F4775B703310E831 /* MenuBarController.swift in Sources */,
 				85F8851BA84FF21EFC4EEA43 /* Motion.swift in Sources */,

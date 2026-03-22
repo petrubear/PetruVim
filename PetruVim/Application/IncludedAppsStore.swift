@@ -30,8 +30,10 @@ final class IncludedAppsStore {
     }
 
     /// Returns true when the key event should be blocked (passed through to the app).
-    /// Blocks when: this app is not in the included list (empty list blocks all apps).
+    /// Empty list → Vim active everywhere (nothing blocked).
+    /// Non-empty list → block any app not in the list.
     func isBlocked(_ bundleID: String) -> Bool {
+        if cachedIDs.isEmpty { return false }
         return !cachedIDs.contains(bundleID)
     }
 

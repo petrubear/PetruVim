@@ -157,8 +157,9 @@ final class VimEngine {
         switch op {
         case .deleteChar:
             var yanked: String?
-            try? textElement.updateFocusedElement { [self] buffer in
-                let result = OperatorResolver.apply(.deleteChar, motion: .right, count: count, buffer: buffer, register: register)
+            try? textElement.updateFocusedElement { buffer in
+                // motion: .right and register are ignored by deleteChar; passing nil to make that explicit
+                let result = OperatorResolver.apply(.deleteChar, motion: .right, count: count, buffer: buffer, register: nil)
                 yanked = result.yankedText
                 return result.buffer
             }

@@ -15,6 +15,7 @@ final class AppCoordinator {
     private var keyboardAdapter: CGEventKeyboardAdapter?
     private var clipboardAdapter: NSPasteboardAdapter?
     private var notificationsAdapter: DistributedNotifAdapter?
+    private var modeObserver: NSObjectProtocol?
 
     func start() {
         menuBarController = MenuBarController(onSettingsTapped: { [weak self] in
@@ -39,6 +40,10 @@ final class AppCoordinator {
     }
 
     func stop() {
+        if let observer = modeObserver {
+            DistributedNotificationCenter.default().removeObserver(observer)
+            modeObserver = nil
+        }
         engine?.stop()
     }
 
@@ -73,8 +78,13 @@ final class AppCoordinator {
         engine?.start()
         menuBarController?.updateMode(.normal)
 
-        // Observe mode changes to update menu bar
-        DistributedNotificationCenter.default().addObserver(
+        // Observe mode changes to update menu bar — remove any existing observer first
+        // to prevent stacking if startEngine() is called more than once.
+        if let observer = modeObserver {
+            DistributedNotificationCenter.default().removeObserver(observer)
+            modeObserver = nil
+        }
+        modeObserver = DistributedNotificationCenter.default().addObserver(
             forName: DistributedNotifAdapter.modeChangeNotification,
             object: nil,
             queue: .main

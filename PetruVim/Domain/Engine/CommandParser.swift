@@ -183,6 +183,10 @@ final class CommandParser {
 
         // s = delete char + enter insert (cl)
         if ch == "s" {
+            if pendingOperator != nil {
+                reset()
+                return .passThrough
+            }
             let cmd = VimCommand.operatorMotion(count: currentCount(), .change, .right)
             reset()
             return cmd
@@ -376,10 +380,7 @@ final class CommandParser {
     }
 
     private func resetAfterCommand() {
-        pendingOperator = nil
-        countBuffer = ""
-        awaitingChar = nil
-        gPending = false
+        reset()
     }
 
     private func resolveMotionOrOperator(_ motion: Motion, mode: VimMode) -> VimCommand {

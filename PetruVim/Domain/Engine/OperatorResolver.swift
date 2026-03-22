@@ -96,7 +96,21 @@ enum OperatorResolver {
         case .delete:
             var newText = text
             newText.removeSubrange(startIdx..<endIdx)
-            let newCursor = min(cursorBase, max(newText.count - 1, 0))
+            if newText.isEmpty {
+                return OperatorResult(buffer: TextBuffer(newText, cursor: 0), yankedText: yanked)
+            }
+            let rawCursor = min(cursorBase, newText.count - 1)
+            // Find first non-blank of the line at rawCursor
+            let cursorIdx = newText.index(newText.startIndex, offsetBy: max(rawCursor, 0))
+            let lineStart = newText[..<cursorIdx].lastIndex(of: "\n").map { newText.index(after: $0) } ?? newText.startIndex
+            let lineEnd = newText[lineStart...].firstIndex(of: "\n") ?? newText.endIndex
+            var fnb = lineStart
+            while fnb < lineEnd {
+                let c = newText[fnb]
+                if c != " " && c != "\t" { break }
+                fnb = newText.index(after: fnb)
+            }
+            let newCursor = newText.distance(from: newText.startIndex, to: fnb)
             let result = TextBuffer(newText, cursor: newCursor)
             return OperatorResult(buffer: result, yankedText: yanked)
 
